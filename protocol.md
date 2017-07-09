@@ -15,20 +15,27 @@ Each player have two ID's that's the same throughout the connection:
 
 ## Server-Bound 
 
-* `ch`
-  * `message`
-    * The message to send.
+#### `8` - Alliance
+
+Creates a new alliance.
+
+* `name` - The name of the new alliance.
+    
+#### `ch` - Chat Message
+
+Send a message that will appear over your player.
+
+* `message` - The message to send.
 
 ## Client-bound
 
-* [Leaderboard (`5`)](#leaderboard) - data of the leaderboard
-* [Chat Message (`ch`)](#)
-  * `id`
-    * The sender's short ID.
-  * `message`
-    * The message that was sent.
-
-#### Leaderboard (5)
+#### `5` - Leaderboard
 
 Leaderboard packets have the ID of `5`
 
+#### `ch` - Chat Message
+
+Recieves a new message that will appear over the sender's player.
+
+* `id` - The sender's short ID.
+* `message` - The message that was sent.
