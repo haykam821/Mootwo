@@ -2,7 +2,7 @@
 
 This document describes the protocol used by MooMoo.io, as of July 9th, 2017.This
 
-MooMoo.io uses the socket.io (s.io) protocol.MooMoo
+MooMoo.io uses the socket.io (s.io) protocol.
 
 ## Server-Bound 
 
@@ -12,8 +12,8 @@ MooMoo.io uses the socket.io (s.io) protocol.MooMoo
 
 ## Client-bound
 
-* [Leaderboard (5)](#leaderboard)
-* `ch`
+* [Leaderboard (`5`)](#leaderboard) - data of the leaderboard
+* [Chat Message (`ch`)](#)
   * `id`
     * The sender's short ID.
   * `message`
@@ -22,3 +22,4 @@ MooMoo.io uses the socket.io (s.io) protocol.MooMoo
 #### Leaderboard (5)
 
 Leaderboard packets have the ID of `5`
+
