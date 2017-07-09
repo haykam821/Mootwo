@@ -18,8 +18,9 @@ for (var i = 5000; i <= 5010; i++) {
   io(i).on('connection', function (socket) {
     sockets.push(socket)
     socket.on('1', function(data){
-      console.log(data.name)
       var id = 27
+
+      name = data.name.length > 15 ? 'unknown' : data.name;
 
       socket.emit('id', {"teams":teams})
       socket.emit('1', id)
@@ -41,7 +42,7 @@ for (var i = 5000; i <= 5010; i++) {
           socket.emit("3",[id,x,y,-2.26,-1,0,0,userteam,0,0,0,0])
         }
     },)
-      socket.emit("2",["a3Pm5dMzeKOjc5gvAJEF",id,data.name,x,7200,0,100,100,35,data.skin],true)
+      socket.emit("2",["a3Pm5dMzeKOjc5gvAJEF",id,name,x,7200,0,100,100,35,data.skin],true)
       socket.emit("5",[27,data.name,9001])//[5,"<b>RIP</b>",31988,45,"KADEJO503",23404,34,"winter wolf",4821,28,"Godenot",4500,33,"Arena Closer",3000,32,"LightTheif",2940,6,"CarlosKoS-_-16",2800,4,"GD desconhecido",2635,35,"jack black GD",2357,19,"AMIGO BOM",1623])
       socket.emit("6",[
         29, 3115.1, 13592.9, 0, 109.2, 1, null, -1,
