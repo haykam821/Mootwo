@@ -13,8 +13,13 @@ MooMoo.io uses the socket.io protocol.
   * [`2` - Aim](#2---aim)
   * [`3` - Move](#3---move)
   * [`8` - Create Alliance](#8---create-alliance)
-  * [`ch` - Chat Message](#ch---chat-message)
+  * [`ch` - Send Message](#ch---send-message)
 * [Client-bound](#client-bound)
+  * [`id` - Identify](#id---identify)
+  * [`1` - Spawned](#1---spawned)
+  * [`5` - Leaderboard](#5---leaderboard)
+  * [`15` - Level & XP](#15---level--xp)
+  * [`ch` - Chat Message](#ch---chat-message)
 
 ## ID Systems
 
@@ -44,7 +49,7 @@ Move toward a direction
 Creates a new alliance.
 * `name` - The name of the new alliance
 
-### `ch` - Chat Message
+### `ch` - Send Message
 Send a message that will appear over your player
 * `message` - The message to send
 
