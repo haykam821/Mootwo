@@ -6,16 +6,29 @@ MooMoo.io uses the socket.io (s.io) protocol.MooMoo
 
 ## Server-Bound 
 
-* `8` — create new alliance
+### `8`
+
+Creates a new alliance.
+
+Arguments:
   * `name`
     * The name of the new alliance.
-* `ch` — send message
+    
+### `ch`
+
+Send a message that will appear over your player.
+
+Arguments:
   * `message`
     * The message to send.
 
-### Client-bound
+## Client-bound
 
-* `ch` — recieve message
+### `ch`
+
+Recieves a new message that will appear over the sender's player.
+
+Arguments:
   * `id`
     * The sender's short ID.
   * `message`
