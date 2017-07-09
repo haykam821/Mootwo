@@ -57,11 +57,13 @@ Leaderboard packets have the ID of `5`
 Emmitted when you gain XP or level up
 * `xp` - Current XP
 * `maxXp` - The XP you need to have to level up.
-* `level`† - Your current level
+* `level`<sup>[1](#foot-1)</sup> - Your current level
 
 ### `ch` - Chat Message
 Recieves a new message that will appear over the sender's player
 * `id` - The sender's short ID
 * `message` - The message that was sent
 
-† = injectable of HTML
+- - - - - - - - - - - - - - - - - - - -
+
+<a name="foot-1">1</a>: injectable of HTML
