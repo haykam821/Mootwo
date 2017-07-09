@@ -70,8 +70,11 @@ for (var i = 5000; i <= 5010; i++) {
           x = 7200;
           y = 7200;
         }
-        vx = Math.cos(data) * 60
-        vy = Math.sin(data) * 60
+
+        var speed = y > 2400 ? 60 * 0.8 : 60;
+
+        vx = Math.cos(data) * speed
+        vy = Math.sin(data) * speed
 
         x += vx;
         y += vy;
