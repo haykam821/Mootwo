@@ -6,13 +6,17 @@ MooMoo.io uses the socket.io protocol.
 
 ## Table of Contents
 
+* [Table of Contents](#table-of-contents)
 * [ID System](#id-systems)
   * [For Players](#for-players)
+  * [For Objects](#for-objects)
+  * [For Clans](#for-clans)
 * [Server-Bound](#server-bound)
   * [`1` - Spawn](#1---spawn)
   * [`2` - Aim](#2---aim)
   * [`3` - Move](#3---move)
-  * [`8` - Create Alliance](#8---create-alliance)
+  * [`8` - Create Clan](#8---create-clan)
+  * [`10` - Join Clan](#8---join-clan)
   * [`ch` - Send Message](#ch---send-message)
 * [Client-bound](#client-bound)
   * [`id` - Identify](#id---identify)
@@ -28,6 +32,14 @@ MooMoo.io uses the socket.io protocol.
 Each player have two ID's that's the same throughout the connection:
 * Short ID (SID, ID), which is an int
 * Long ID (LID), which is a hashed string, provided by socket.io
+
+### For Objects
+
+Each object have an ID
+
+### For Clans
+
+Clans do not have numbered ID, but rather uses it's name
 
 ## Server-Bound 
 
@@ -45,9 +57,13 @@ Aim and point your weapon or tool at the angle you wish
 Move toward a direction
 * `angle` - The angle to move toward in radians, null if not moving
 
-### `8` - Create Alliance
-Creates a new alliance.
-* `name` - The name of the new alliance
+### `8` - Create Clan
+Creates a new clan or alliance
+* `name` - The name of the new clan
+
+### `10` - Join Clan
+Join an existing clan or alliance
+* `name` - The name of the clan to join
 
 ### `ch` - Send Message
 Send a message that will appear over your player
