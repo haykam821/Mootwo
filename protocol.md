@@ -93,9 +93,9 @@ Leaderboard packets have the ID of `5`, can be 30 elements long, and is made of 
 
 ### `15` - Level & XP
 Emmitted when you gain XP or level up
-* `xp` - Current XP
-* `maxXp` - The XP you need to have to level up.
-* `level`<sup>[1](#foot-1)</sup> - Your current level
+* `xp`<sup>[2](#foot-2)</sup> - Current XP
+* `maxXp`<sup>[2](#foot-2)</sup> - The XP you need to have to level up.
+* `level`<sup>[2](#foot-2)</sup> - Your current level
 
 ### `ch` - Chat Message
 Recieves a new message that will appear over the sender's player
@@ -105,3 +105,4 @@ Recieves a new message that will appear over the sender's player
 - - - - - - - - - - - - - - - - - - - -
 
 <a name="foot-1">1</a>: injectable of HTML
+<a name="foot-2">2</a>: optional
