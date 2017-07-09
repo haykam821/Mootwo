@@ -14,6 +14,12 @@ Each player have two ID's that's the same throughout the connection:
 
 ## Server-Bound 
 
+### `1` - Spawn
+Spawn in the server, nothing special
+* `data` - The information to spawn with
+  * `data.name` - The name you chose
+  * `data.skin` - The skin color
+
 ### `2` - Aim
 Aim and point your weapon or tool at the angle you wish
 * `angle` - The angle to aim at in radians
