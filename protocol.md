@@ -6,7 +6,7 @@ MooMoo.io uses the socket.io protocol.
 
 ## ID System
 
-#### For Players
+### For Players
 
 Each player have two ID's that's the same throughout the connection:
 
