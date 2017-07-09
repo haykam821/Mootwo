@@ -4,7 +4,13 @@ This document describes the protocol used by MooMoo.io, as of July 9th, 2017.
 
 MooMoo.io uses the socket.io protocol.
 
-## ID System
+## Table of Contents
+
+* [ID System](#id-systems)
+* [Server-Bound](#server-bound)
+* [Client-bound](#client-bound)
+
+## ID Systems
 
 ### For Players
 
@@ -36,7 +42,7 @@ Creates a new alliance.
 Send a message that will appear over your player
 * `message` - The message to send
 
-## Client-bound
+## Client-Bound
 
 ### `id` - Identify
 Identify packets are sent as soon as the connection is made
