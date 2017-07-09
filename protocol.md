@@ -19,8 +19,8 @@ Aim and point your weapon or tool at the angle you wish
 * `angle` - The angle to aim at in radians
 
 ### `3` - Move
-Move in a diretion
-* `angle` - The angle to move
+Move toward a direction
+* `angle` - The angle to move toward in radians, null if not moving
 
 ### `8` - Alliance
 Creates a new alliance.
