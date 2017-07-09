@@ -38,10 +38,30 @@ Send a message that will appear over your player
 
 ## Client-bound
 
+### `id` - Identify
+Identify packets are sent as soon as the connection is made
+* `data` - The current state of the server
+  * `data.teams` - Array of created clans
+    * `clan` - Object for a clan
+      * `clan.sid` - Name of the clan
+      * `clan.owner` - The SID of the owner of this clan
+
+### `1` - Spawned
+Emitted when you spawn or respawn
+* `id` - Your SID
+
 ### `5` - Leaderboard
 Leaderboard packets have the ID of `5`
+
+### `15` - Level & XP
+Emmitted when you gain XP or level up
+* `xp` - Current XP
+* `maxXp` - The XP you need to have to level up.
+* `level`† - Your current level
 
 ### `ch` - Chat Message
 Recieves a new message that will appear over the sender's player
 * `id` - The sender's short ID
 * `message` - The message that was sent
+
+† = injectable of HTML
