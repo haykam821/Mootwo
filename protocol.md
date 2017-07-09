@@ -2,7 +2,16 @@
 
 This document describes the protocol used by MooMoo.io, as of July 9th, 2017.This
 
-MooMoo.io uses the socket.io (s.io) protocol.
+MooMoo.io uses the socket.io protocol.
+
+## ID System
+
+#### For Players
+
+Each player have two ID's that's the same throughout the connection:
+
+* Short ID (SID, ID), which is an int
+* Long ID (LID), which is a hashed string, provided by socket.io
 
 ## Server-Bound 
 
