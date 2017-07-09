@@ -6,19 +6,17 @@ MooMoo.io uses the socket.io (s.io) protocol.MooMoo
 
 ## Server-Bound 
 
-* `ch`
+* `8` — create new alliance
+  * `name`
+    * The name of the new alliance.
+* `ch` — send message
   * `message`
     * The message to send.
 
-## Client-bound
+### Client-bound
 
-* [Leaderboard (5)](#leaderboard)
-* `ch`
+* `ch` — recieve message
   * `id`
     * The sender's short ID.
   * `message`
     * The message that was sent.
-
-#### Leaderboard (5)
-
-Leaderboard packets have the ID of `5`
