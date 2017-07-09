@@ -7,7 +7,13 @@ MooMoo.io uses the socket.io protocol.
 ## Table of Contents
 
 * [ID System](#id-systems)
+  * [For Players](#for-players)
 * [Server-Bound](#server-bound)
+  * [`1` - Spawn](#1---spawn)
+  * [`2` - Aim](#2---aim)
+  * [`3` - Move](#3---move)
+  * [`8` - Create Alliance](#8---create-alliance)
+  * [`ch` - Chat Message](#ch---chat-message)
 * [Client-bound](#client-bound)
 
 ## ID Systems
@@ -34,7 +40,7 @@ Aim and point your weapon or tool at the angle you wish
 Move toward a direction
 * `angle` - The angle to move toward in radians, null if not moving
 
-### `8` - Alliance
+### `8` - Create Alliance
 Creates a new alliance.
 * `name` - The name of the new alliance
 
