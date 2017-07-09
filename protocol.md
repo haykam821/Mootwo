@@ -84,7 +84,12 @@ Emitted when you spawn or respawn
 * `id` - Your SID
 
 ### `5` - Leaderboard
-Leaderboard packets have the ID of `5`
+Leaderboard packets have the ID of `5`, can be 30 elements long, and is made of strings and ints
+* `data` - An array with length multiple of 3, with each 3 element being an chunk
+  * `chunk` - A chunk of this array with length 3
+    * `id` - The SID of this player
+    * `name` - The name of this player
+    * `gold` - The amount of gold this player have
 
 ### `15` - Level & XP
 Emmitted when you gain XP or level up
