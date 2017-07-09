@@ -100,11 +100,14 @@ for (var i = 5000; i <= 5010; i++) {
   });
 }
 
-var evalAsync = async function(um) {
-  eval(um)
-}
 repl.start({
-  eval: (a, _c, _f, cb) => evalAsync(a).then(b => cb(null, b)).catch(err => cb(err))
+  eval: (a, _c, _f, cb) => {
+    try {
+      cb(null, eval(a))
+    } catch(e) {
+      cb(e)
+    }
+  }
 })
 
 /*/
