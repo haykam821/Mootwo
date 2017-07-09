@@ -1,6 +1,6 @@
 # Protocol
 
-This document describes the protocol used by MooMoo.io, as of July 9th, 2017.This
+This document describes the protocol used by MooMoo.io, as of July 9th, 2017.
 
 MooMoo.io uses the socket.io protocol.
 
