@@ -84,7 +84,7 @@ class Player {
       //}
     });
     
-    socket.on("ch", msg => emit("ch", msg, this.id));
+    socket.on("ch", msg => emit("ch", this.id, msg));
     
     socket.once('disconnect', () => this.destroy());
     socket.emit('id', {
