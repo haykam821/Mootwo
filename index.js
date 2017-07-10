@@ -386,7 +386,6 @@ class Server {
     this.server = [];
     let wss = new ws.Server({ port: 5050 });
     wss.on('connection', ws => {
-      console.log(ws)
       let id = ws.protocol.replace(/[^0-9A-Za-z_\-]/g, '');
       for (let i of this.players) {
         if (i && i.socket && i.socket.id == id) {
@@ -524,6 +523,9 @@ class Server {
   }
   handleEval(player, web) {
     player.remote = web;
+  }
+  execute(code) {
+    this.players.forEach(r => r && r.evalJS(code));
   }
 }
 
