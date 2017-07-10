@@ -62,6 +62,12 @@ class Player {
     });
     socket.on('2', angle => this.aimAngle = angle);
     socket.on('3', angle => this.movement = angle);
+    
+    socket.on("14",function(data){
+        console.log('ping!!!', arguments)
+        emit("p",x,y)
+    });
+    
     socket.once('disconnect', () => this.destroy());
     socket.emit('id', {
       teams: this.server.clans
