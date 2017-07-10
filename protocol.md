@@ -17,12 +17,12 @@ MooMoo.io uses the socket.io protocol.
   * [`3` - Move](#3---move)
   * [`8` - Create Clan](#8---create-clan)
   * [`10` - Join Clan](#8---join-clan)
-  * [`14` - Ping](#8---ping)
   * [`ch` - Send Message](#ch---send-message)
 * [Client-bound](#client-bound)
   * [`id` - Identify](#id---identify)
   * [`1` - Spawned](#1---spawned)
   * [`5` - Leaderboard](#5---leaderboard)
+  * [`6` - Object](#6---object)
   * [`15` - Level & XP](#15---level--xp)
   * [`ch` - Chat Message](#ch---chat-message)
 
@@ -48,7 +48,7 @@ Clans do not have numbered ID, but rather uses it's name
 Spawn in the server, nothing special
 * `data` - The information to spawn with
   * `data.name` - The name you chose
-  * `data.skin` - The skin color index (from array `[#bf8f54,#cbb091,#896c4b,#fadadc,#ececec,#b86565]`)
+  * `data.skin` - The skin color
 
 ### `2` - Aim
 Aim and point your weapon or tool at the angle you wish
@@ -65,10 +65,6 @@ Creates a new clan or alliance
 ### `10` - Join Clan
 Join an existing clan or alliance
 * `name` - The name of the clan to join
-
-### `14` - Ping
-Makes a temporary mark at your position on the minimap (sent when pressing <kbd>R</kbd> or clicking the minimap)
-* `sid` - The SID of the sender of the ping
 
 ### `ch` - Send Message
 Send a message that will appear over your player
@@ -90,11 +86,24 @@ Emitted when you spawn or respawn
 
 ### `5` - Leaderboard
 Leaderboard packets have the ID of `5`, can be 30 elements long, and is made of strings and ints
-* `data` - An array with length multiple of 3, with each 3 element being an chunk
+* `data` - An array with length multiple of 3, with each 3 elements being an chunk
   * `chunk` - A chunk of this array with length 3
     * `id` - The SID of this player
     * `name` - The name of this player
     * `gold` - The amount of gold this player have
+
+### `6` - Object
+Object packets, like Leaderboard packets, is made of chunks
+* `data` - An array with length multiple of 8, with each 8 elements being an chunk
+  * `chunk` - A chunk of this array with length 8
+    * `id` - The ID of this object
+    * `x` - The X position of this
+    * `y` - The Y position of this
+    * `unk` - Unknown, and is always 0
+    * `size` - The size of the object
+    * `resourceType` - The type of this object if it's a resource, null otherwise
+    * `buildingType` - The type of this object if it's a building, null otherwise
+    * `owner` - The SID of the owner of this object, -1 if it's not owned
 
 ### `15` - Level & XP
 Emmitted when you gain XP or level up
