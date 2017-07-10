@@ -38,7 +38,7 @@ function flatten(arr) {
 class Player {
   constructor(server, id) {
     let config = server.config;
-    this.id = id++;
+    this.id = id;
     this.clan = null;
     this.server = server;
     this.alive = false;
@@ -53,15 +53,15 @@ class Player {
 
     this.aimAngle = 0;
     this.movement = null;
+    this.kill();
+    this.x = this.y = this.vx = this.vy = 0;
+    
     this.attacking = false;
     this.autoAttack = false;
-    this.kill();
     this.attackReady = true;
     this.attackInterval = null;
     this.attackTimeout = null;
     this.attackCooldown = 500;
-
-    this.x = this.y = this.vx = this.vy = 0;
   }
   updateMovement(delta) {
     let config = this.server.config;
@@ -135,6 +135,14 @@ class Player {
       if (dif > config.mapPingTime) {
         this.lastPing = now;
         emitAll('p', this.x, this.y);
+      }
+    });
+
+    socket.on('13', (type, id) => {
+      if (type) {
+        socket.emit('us', 0, id);
+      } else {
+        socket.emit('us', 1, id);
       }
     });
 
