@@ -42,8 +42,13 @@ class Player {
     this.clan = null;
     this.server = server;
     this.alive = false;
+<<<<<<< HEAD
 
     this.lastPing = new Date('2017-07-09 5:57:00').getTime();
+=======
+    
+    this.lastPing = new Date('Sat, 08 Jul 2017 01:07:11 GMT').getTime();
+>>>>>>> 49c177e5e466752a0cecabf67b6635720f4895ad
 
     this.name = 'unknown';
     this.dev = false;
@@ -401,7 +406,7 @@ class Server {
         i--;
         continue;
       }
-      all.push(new Resource(this, id++, x, y, 50, 'points'));
+      all.push(new Resource(this, id++, x, y, randChoose(config.rockScales), 'points'));
     }
     this.objects = all;
   }
