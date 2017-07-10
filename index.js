@@ -74,7 +74,6 @@ class Player {
     socket.on('3', angle => this.movement = angle);
     
     socket.on("14",function(data){
-        console.log('ping!!!', arguments)
         emit("p",x,y)
     });
     
