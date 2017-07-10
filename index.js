@@ -1,11 +1,47 @@
+var configDefault = {
+  mapScale: 14400,
+  maxPlayers: 50,
+};
+var randInt = (min, max) => {
+  return Math.floor(Math.random() * (max - min)) + min;
+};
 class Player {
-  constructor(x, y, id) {
-    this.x = x;
-    this.y = y;
+  constructor(server, id) {
+    var config = server.config;
     this.id = id;
+    this.clan = null;
+    this.server = server;
+  }
+  link() {
+    
+  }
+  destroy() {
+    this.server.remove(this.id);
+  }
+  spawn() {
+    this.x = randInt(0, config.mapScale);
+    this.y = randInt(0, config.mapScale);
+    this.vx = 0;
+    this.vy = 0;
   }
 }
-var limit = 14400;
+class Server {
+  constructor(config = configDefault) {
+    this.config = config
+    this.players = Array(config.maxPlayers).fill(null)
+  }
+  remove(sid) {
+    this.players[sid] = null
+  }
+  spawn(connection) {
+    for (var i = 0; i < 50; i++) {
+      if (this.players[i] == null) {
+        this.players[i] = new Player(this, i).link(connection);
+        break;
+      }
+    }
+  }
+}
 var teams = [];
 var sockets = [];
 var repl = require('repl');
@@ -30,8 +66,8 @@ for (var i = 5000; i <= 5010; i++) {
       socket.emit('1', id);
       socket.emit('mm', 0);
       socket.emit('3', []);
-      var x = Math.random() * limit;
-      var y = Math.random() * limit;
+      var x = randInt(0, config.mapScale);
+      var y = randInt(0, config.mapScale);
       var userteam = null;
       var last = 0;
       socket.emit("2", ["a3Pm5dMzeKOjc5gvAJEF", id, name, x, 7200, 0, 100, 100, 35, data.skin], true);
@@ -58,7 +94,7 @@ for (var i = 5000; i <= 5010; i++) {
         if (data == null) {
           vx = vy = 0;
           return;
-        } else if (x < 0 || x > limit || y < 0 || y > limit) {
+        } else if (x < 0 || x > config.mapScale || y < 0 || y > config.mapScale) {
           x = 7200;
           y = 7200;
         }
