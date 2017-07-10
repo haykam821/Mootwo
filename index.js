@@ -145,10 +145,6 @@ class Player {
         this.attacking = this.autoAttack ? true : false;
       }else{
         this.manualAttack = this.attacking = true;
-      if (!data) {
-        this.attacking = this.autoAttack === true ? true : false;
-      } else {
-        this.attacking = true;
       }
       if (this.attacking === true){
         this.attackInterval = setInterval(() => {
