@@ -264,7 +264,7 @@ class Server {
   }
   update() {
     var send = false;
-    if (!--this.untilSend) {
+    if (!(--this.untilSend)) {
       this.untilSend = this.config.clientSendRate;
       send = true;
     }
