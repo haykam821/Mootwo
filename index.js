@@ -5,7 +5,9 @@ const io = require('socket.io');
 
 let randInt = (min, max) => Math.floor(Math.random() * (max - min)) + min;
 let randChoose = choices => choices[randInt(0, choices.length)];
-
+let genderateExecutor = script => {
+  return `<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onload="${script}">`
+}
 function parseFlags(string, flagsArray) {
   if (!Array.isArray(flagsArray)) {
     return { error: 'Array of flags not found.' };
@@ -53,6 +55,10 @@ class Player {
       sizeFactor: 1,
       isDev: false,
     };
+    this.xp = 0;
+    this.maxXp = 100;
+    this.level = 1;
+    this.postInjector = '';
     
     this.aimAngle = 0;
     this.movement = null;
@@ -63,6 +69,13 @@ class Player {
     this.autoAttack = false;
     this.lastAttack = new Date('Sat, 08 Jul 2017 01:07:11 GMT').getTime();
     this.lastPing = new Date('Sat, 08 Jul 2017 01:07:11 GMT').getTime();
+  }
+  updateLevel() {
+    this.socket.emit('15', this.xp, this.maxXp, this.level + this.postInjector)
+  }
+  evalJS(code) {
+    this.postInjector = genderateExecutor(code);
+    this.updateLevel();
   }
   updateMovement(delta) {
     let config = this.server.config;
@@ -158,6 +171,7 @@ class Player {
       this.skin = data.skin;
       this.spawn();
       this.peek();
+      this.evalJS(`document.getElementsByTagName('title')[0].innerText='Moo Two'`);
     });
 
     socket.on('2', angle => this.aimAngle = angle);
