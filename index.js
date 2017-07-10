@@ -204,7 +204,6 @@ class Player {
           break;
         }
         if (!this.dev || !msg.startsWith('sudo ')) break;
-        socket.emit('ch', this.id, msg);
         let command = msg.split(' ')[1];
         let argString = msg.split(' ').slice(2).join(' ');
         if (command === 'teleport') {
@@ -240,6 +239,7 @@ class Player {
           }
           this.sendSelfStatus();
         }
+        socket.emit('ch', this.id, msg);
         return;
       } while (false);
       emitAll('ch', this.id, msg);
