@@ -47,7 +47,7 @@ Clans do not have numbered ID, but rather uses it's name
 Spawn in the server, nothing special
 * `data` - The information to spawn with
   * `data.name` - The name you chose
-  * `data.skin` - The skin color
+  * `data.skin` - The skin color index (from array `[#bf8f54,#cbb091,#896c4b,#fadadc,#ececec,#b86565]`)
 
 ### `2` - Aim
 Aim and point your weapon or tool at the angle you wish
