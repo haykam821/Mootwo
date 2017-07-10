@@ -6,46 +6,67 @@ var randInt = (min, max) => {
 };
 class Player {
   constructor(server, id) {
-    var config = server.config;
+    this.config = server.config;
     this.id = id;
     this.clan = null;
     this.server = server;
+    this.kill();
   }
-  update() {
-    
+  update(delta) {
+    if (this.alive) {
+      this.x += this.vx;
+      this.y += this.vy;
+      this.xv *= Math.pow(this.config.playerDecel, delta);
+      this.yv *= Math.pow(this.config.playerDecel, delta);
+    } 
   }
   link(socket) {
-    this.socket = socket
-    socket.on('error', err => {
+    this.socket = socket;
+    socket.once('error', err => {
       console.log(err);
       this.destroy();
     })
-    socket.on('disconnect', () => this.destroy());
+    socket.once('disconnect', () => this.destroy());
   }
   destroy() {
+    this.kill();
     this.server.remove(this.id);
     this.socket.disconnect();
   }
-  spawn() {
-    this.x = randInt(0, config.mapScale);
-    this.y = randInt(0, config.mapScale);
+  kill() {
+    this.alive = false;
+    this.x = 0;
+    this.y = 0;
+    this.slowDown();
+  }
+  slowDown() {
     this.vx = 0;
     this.vy = 0;
+  }
+  spawn() {
+    this.alive = true;
+    this.x = randInt(0, config.mapScale);
+    this.y = randInt(0, config.mapScale);
+    this.slowDown();
   }
 }
 class Server {
   constructor(config) {
     this.config = config;
     this.players = Array(config.maxPlayers).fill(null);
+    this.lastRun = Date.now();
     setInterval(() => this.update(), config.serverUpdateRate);
   }
   remove(sid) {
     this.players[sid] = null;
   }
   update() {
+    var now = Date.now();
+    var delta = this.lastRun - now;
+    this.lastRun = now;
     for (var i of this.players) {
       if (i != null) {
-        i.update();
+        i.update(delta);
       }
     }
   }
