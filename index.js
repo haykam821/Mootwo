@@ -90,8 +90,10 @@ class Player {
     }
     this.vx *= Math.pow(config.playerDecel, delta);
     this.vy *= Math.pow(config.playerDecel, delta);
-    this.vx += this.devMods.hyperspeed * tx * config.playerSpeed * delta * 400 / 400;
-    this.vy += this.devMods.hyperspeed * ty * config.playerSpeed * delta * 400 / 400;
+    var speed = this.devMods.hyperspeed * config.playerSpeed * delta * 400 / 400;
+    if (this.y < config.snowBiomeTop) speed *= 0.8;
+    this.vx += tx * speed;
+    this.vy += ty * speed;
     this.x += this.vx * delta * 2;
     this.y += this.vy * delta * 2;
     if (this.y > config.mapScale / 2 - config.riverWidth / 2 && this.y < config.mapScale / 2 + config.riverWidth / 2) {
