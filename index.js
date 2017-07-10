@@ -93,7 +93,7 @@ class Player {
   kill() {
     this.alive = false;
     this.x = 0;
-    this.y = 0;no
+    this.y = 0;
     this.slowDown();
   }
   slowDown() {
