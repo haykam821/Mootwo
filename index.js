@@ -74,10 +74,10 @@ class Player {
     }
     this.vx *= Math.pow(config.playerDecel, delta);
     this.vy *= Math.pow(config.playerDecel, delta);
-    this.vx += tx * config.playerSpeed * delta * 400 / 400 * 2;
-    this.vy += ty * config.playerSpeed * delta * 400 / 400 * 2;
-    this.x += this.vx * delta;
-    this.y += this.vy * delta;
+    this.vx += tx * config.playerSpeed * delta * 400 / 400;
+    this.vy += ty * config.playerSpeed * delta * 400 / 400;
+    this.x += this.vx * delta * 2;
+    this.y += this.vy * delta * 2;
     if (this.y > config.mapScale / 2 - config.riverWidth / 2 && this.y < config.mapScale / 2 + config.riverWidth / 2) {
       this.vx += 0.0011 * delta;
     }
