@@ -30,7 +30,7 @@ function parseFlags(string, flagsArray) {
 }
 
 function flatten(arr) {
-  return arr.reduce((flat, toFlatten) => 
+  return arr.reduce((flat, toFlatten) =>
     flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten)
   , []);
 }
@@ -42,7 +42,6 @@ class Player {
     this.clan = null;
     this.server = server;
     this.alive = false;
-    
     this.lastPing = new Date('Sat, 08 Jul 2017 01:07:11 GMT').getTime();
 
     this.name = 'unknown';
@@ -50,13 +49,18 @@ class Player {
     this.skin = 0;
     this.size = config.playerScale;
     this.viewedObjects = [];
-    
     this.food = this.wood = this.stone = this.points = 0;
-    
+
     this.aimAngle = 0;
     this.movement = null;
+    this.attacking = false;
+    this.autoAttack = false;
     this.kill();
-    
+    this.attackReady = true;
+    this.attackInterval = null;
+    this.attackTimeout = null;
+    this.attackCooldown = 500;
+
     this.x = this.y = this.vx = this.vy = 0;
   }
   updateMovement(delta) {
@@ -113,7 +117,7 @@ class Player {
       console.log(err);
       this.destroy();
     });
-    
+
     let emitAll = (...arg) => {
       try {
         socket.broadcast.emit(...arg)
@@ -121,10 +125,10 @@ class Player {
       } catch (e) {
       }
     }
-    
+
     socket.on('2', angle => this.aimAngle = angle);
     socket.on('3', angle => this.movement = angle);
-    
+
     socket.on('14', data => {
       let now = Date.now();
       let dif = now - this.lastPing;
@@ -133,7 +137,48 @@ class Player {
         emitAll('p', this.x, this.y);
       }
     });
-    
+
+    socket.on("4", data => {
+      if (data == 0){
+        this.attacking = this.autoAttack === true ? true : false;
+      }else{
+        this.attacking = true;
+      }
+      if (this.attacking === true){
+        this.attackInterval = setInterval(() => {
+          if (this.attacking === true){
+            if (this.attackReady === true){
+              socket.emit("7", this.id, 0, 0);
+              this.attackReady = false;
+              this.attackTimeout = setTimeout(() => {this.attackReady = true;}, this.attackCooldown);
+            }
+          }
+        });
+      }else{
+        clearInterval(this.attackInterval);
+      }
+    });
+
+    socket.on("7", data => {
+      if (data == 1){
+        this.autoAttack = !this.autoAttack;
+        this.attacking = this.autoAttack === true ? true : false;
+      }
+      if (this.autoAttack === true){
+        this.attackInterval = setInterval(() => {
+          if (this.attacking === true){
+            if (this.attackReady === true){
+              socket.emit("7", this.id, 0, 0);
+              this.attackReady = false;
+              this.attackTimeout = setTimeout(() => {this.attackReady = true;}, this.attackCooldown);
+            }
+          }
+        });
+      }else{
+        clearInterval(this.attackInterval);
+      }
+    });
+
     socket.on('ch', msg => {
       do {
         if (msg.startsWith('login ')) {
@@ -223,7 +268,7 @@ class Player {
     socket.emit('2', [socket.id,this.id,this.name,this.x,this.y,0,100,100,this.size,this.skin],true);
   }
   hitResource(type) {
-    
+
   }
 }
 class Resource {
@@ -269,7 +314,7 @@ class Server {
   }
   update() {
     var send = false;
-    if (!--this.untilSend) {
+    if (!(--this.untilSend)) {
       this.untilSend = this.config.clientSendRate;
       send = true;
     }
