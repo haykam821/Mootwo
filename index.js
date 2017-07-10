@@ -3,10 +3,8 @@
 const repl = require('repl');
 const io = require('socket.io');
 
-let randInt = (min, max) => {
-  return Math.floor(Math.random() * (max - min)) + min;
-};
-
+let randInt = (min, max) => Math.floor(Math.random() * (max - min)) + min;
+let randChoose = choices => choices[randInt(0, choices.length)];
 class Player {
   constructor(server, id) {
     let config = server.config;
@@ -105,11 +103,12 @@ class Player {
   }
 }
 class Resource {
-  constructor(server, x, y, type) {
+  constructor(server, x, y, size, type) {
     let config = server.config;
     this.x = x;
     this.y = y;
     this.type = config.resourceTypes.indexOf(type);
+    this.size = size;
   }
   reward(by) {
     by.hitResource(this.type);
@@ -149,24 +148,24 @@ class Server {
         for (let i = 0; i < config.treesPerArea; i++) {
           let x = randInt(areaSize * afx, areaSize * atx);
           let y = randInt(areaSize * afy, areaSize * aty);
-          all.push(new Resource(this, x, y, 'wood'));
+          all.push(new Resource(this, x, y, randChoose(config.treeScales), 'wood'));
         }
         for (let i = 0; i < config.bushesPerArea; i++) {
           let x = randInt(areaSize * afx, areaSize * atx);
           let y = randInt(areaSize * afy, areaSize * aty);
-          all.push(new Resource(this, x, y, 'food'));
+          all.push(new Resource(this, x, y, randChoose(config.bushScales), 'food'));
         }
       }
     }
     for (let i = 0; i < config.totalRocks; i++) {
       let x = randInt(0, mapScale);
       let y = randInt(0, mapScale);
-      all.push(new Resource(this, x, y, 'stone'));
+      all.push(new Resource(this, x, y, randChoose(config.rockScales), 'stone'));
     }
     for (let i = 0; i < config.goldOres; i++) {
       let x = randInt(0, mapScale);
       let y = randInt(0, mapScale);
-      all.push(new Resource(this, x, y, 'points'));
+      all.push(new Resource(this, x, y, 0, 'points'));
     }
     this.objects = all;
   }
@@ -208,7 +207,10 @@ let app = new Server({
   bushesPerArea: 3,
   totalRocks: 32,
   goldOres: 7,
-  resourceTypes: ["wood", "food", "stone", "points"],
+  resourceTypes: ['wood', 'food', 'stone', 'points'],
+  treeScales: [140, 145, 150, 155],
+  bushScales: [80, 85, 95],
+  rockScales: [80, 85, 90],
 });
 
 for (let i = 5000; i <= 5010; i++) {
