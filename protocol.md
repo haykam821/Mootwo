@@ -85,11 +85,24 @@ Emitted when you spawn or respawn
 
 ### `5` - Leaderboard
 Leaderboard packets have the ID of `5`, can be 30 elements long, and is made of strings and ints
-* `data` - An array with length multiple of 3, with each 3 element being an chunk
+* `data` - An array with length multiple of 3, with each 3 elements being an chunk
   * `chunk` - A chunk of this array with length 3
     * `id` - The SID of this player
     * `name` - The name of this player
     * `gold` - The amount of gold this player have
+
+### `6` - Object
+Object packets, like Leaderboard packets, is made of chunks
+* `data` - An array with length multiple of 8, with each 8 elements being an chunk
+  * `chunk` - A chunk of this array with length 8
+    * `id` - The ID of this object
+    * `x` - The X position of this
+    * `y` - The Y position of this
+    * `unk` - Unknown, and is always 0
+    * `size` - The size of the object
+    * `resourceType` - The type of this object if it's a resource, null otherwise
+    * `buildingType` - The type of this object if it's a building, null otherwise
+    * `owner` - The SID of the owner of this object, -1 if it's not owned
 
 ### `15` - Level & XP
 Emmitted when you gain XP or level up
