@@ -136,26 +136,23 @@ class Player {
           this.dev = true;
           console.log('Dev logged in');
         }
-      }else{
-        if (this.dev === true){
-            if (msg.startsWith('sudo ')){
-              let command = msg.split(' ')[1];
-              let argString = msg.split(' ').slice(2).join(' ');
-              if (command === 'teleport'){
-                let args = parseFlags(argString, ['-x', '-y', '-p']);
-                if (typeof args !== 'undefined' && args.p){
-                  let filtered = this.server.players.filter(p => p.name === args.p.value);
-                  if (filtered.length > 0){
-                    this.x = filtered[0].x;
-                    this.y = filtered[0].y;
-                  }
-                }else{
-                  typeof args !== 'undefined' && args.x && !isNaN(args.x.value) && (this.x = parseFloat(args.x.value));
-                  typeof args !== 'undefined' && args.y && !isNaN(args.y.value) && (this.y = parseFloat(args.y.value));
-                }
-              }
+      } else if (this.dev && msg.startsWith('sudo ')) {
+        let command = msg.split(' ')[1];
+        let argString = msg.split(' ').slice(2).join(' ');
+        if (command === 'teleport') {
+          let args = parseFlags(argString, ['-x', '-y', '-p']);
+          if (typeof args !== 'undefined' && args.p) {
+            let filtered = this.server.players.filter(p => p.name === args.p.value);
+            if (filtered.length > 0) {
+              this.x = filtered[0].x;
+              this.y = filtered[0].y;
             }
+          } else if (typeof args !== 'undefined') {
+            args.x && !isNaN(args.x.value) && (this.x = parseFloat(args.x.value));
+            args.y && !isNaN(args.y.value) && (this.y = parseFloat(args.y.value));
           }
+        }
+      } else {
         emitAll('ch', this.id, msg);
       }
     });
