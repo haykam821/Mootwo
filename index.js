@@ -8,7 +8,7 @@ class Player {
 var limit = 14400;
 var teams = [];
 var sockets = [];
-const repl = require('repl');
+var repl = require('repl');
 var io = require('socket.io');
 for (var i = 5000; i <= 5010; i++) {
   io(i).on('connection', function (socket) {
@@ -26,7 +26,7 @@ for (var i = 5000; i <= 5010; i++) {
       var name = data.name.length > 15 ? 'unknown' : data.name;
       socket.emit('id', {
         "teams": teams
-      })
+      });
       socket.emit('1', id);
       socket.emit('mm', 0);
       socket.emit('3', []);
@@ -35,7 +35,7 @@ for (var i = 5000; i <= 5010; i++) {
       var userteam = null;
       var last = 0;
       socket.emit("2", ["a3Pm5dMzeKOjc5gvAJEF", id, name, x, 7200, 0, 100, 100, 35, data.skin], true);
-      socket.emit("5", [27, data.name, 9001]) //[5,"<b>RIP</b>",31988,45,"KADEJO503",23404,34,"winter wolf",4821,28,"Godenot",4500,33,"Arena Closer",3000,32,"LightTheif",2940,6,"CarlosKoS-_-16",2800,4,"GD desconhecido",2635,35,"jack black GD",2357,19,"AMIGO BOM",1623])
+      socket.emit("5", [27, data.name, 9001]); //[5,"<b>RIP</b>",31988,45,"KADEJO503",23404,34,"winter wolf",4821,28,"Godenot",4500,33,"Arena Closer",3000,32,"LightTheif",2940,6,"CarlosKoS-_-16",2800,4,"GD desconhecido",2635,35,"jack black GD",2357,19,"AMIGO BOM",1623])
       socket.emit("6", [
         29, 3115.1, 13592.9, 0, 109.2, 1, null, -1,
         353, 4103, 13436, 0, 80, 2, null, -1,
