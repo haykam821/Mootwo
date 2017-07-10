@@ -50,7 +50,6 @@ class Player {
     this.skin = 0;
     this.size = config.playerScale;
     this.viewedObjects = [];
-    this.devMods = {};
     
     this.food = this.wood = this.stone = this.points = 0;
     
@@ -140,7 +139,7 @@ class Player {
         if (msg.startsWith('login ')) {
           let password = msg.split(' ').slice(1).join(' ');
           if (password === this.server.config.devPassword) {
-            this.dev = true;
+            this.dev = {};
             socket.emit('ch', this.id, 'Logged in as Dev!');
             return;
           }
@@ -162,20 +161,26 @@ class Player {
             args.x && !isNaN(args.x.value) && (this.x = parseFloat(args.x.value));
             args.y && !isNaN(args.y.value) && (this.y = parseFloat(args.y.value));
           }
-          return;
-        }else if (command === 'setpts'){
-    let args = parseFlags(argString, ['-n', '-p']); //number points, player target (defaults to user)
-    if (typeof args !== 'undefined' && args.n && args.p && !isNaN(args.n.value)) {
+        } else if (command === 'setpts') {
+          let args = parseFlags(argString, ['-n', '-p']); //number points, player target (defaults to user)
+          if (typeof args !== 'undefined' && args.n && args.p && !isNaN(args.n.value)) {
             let filtered = this.server.players.filter(p => p.name === args.p.value);
             if (filtered.length > 0 && filtered[0].socket) {
               filtered[0].points = parseInt(args.n.value);
-        filtered[0].socket.emit('9', 'points', filtered[0].points, 1);
+              filtered[0].socket.emit('9', 'points', filtered[0].points, 1);
             }
           } else if (typeof args !== 'undefined' && args.n) {
             args.n && !isNaN(args.n.value) && (this.points = parseInt(args.n.value));
-      socket.emit('9', 'points', this.points, 1);
+            socket.emit('9', 'points', this.points, 1);
           }
-  }
+        } else if (command === 'fat') {
+          let args = parseFlags(argString, ['-q']); //quiting being fat fat
+          if (typeof args !== 'undefined' && args.q) {
+            this.size = config.playerScale;
+          } else if (typeof args !== 'undefined') {
+            this.size = config.playerScale * 2;
+          }
+        }
         return;
       } while (false);
       emitAll('ch', this.id, msg);
