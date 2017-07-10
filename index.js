@@ -32,13 +32,17 @@ class Player {
       tx = Math.cos(this.movement);
       ty = Math.sin(this.movement);
     }
-    this.peek();
     this.vx *= Math.pow(config.playerDecel, delta);
     this.vy *= Math.pow(config.playerDecel, delta);
     this.vx += tx * config.playerSpeed * delta * this.size / 2;
     this.vy += ty * config.playerSpeed * delta * this.size / 2;
     this.x += this.vx;
     this.y += this.vy;
+    
+    (this.x < this.size) && (this.x = this.size + 1, this.xv = Math.max(this.xv, 0));
+    (this.x > config.mapScale - this.size) && (this.x = config.mapScale - this.size - 1, this.xv = Math.min(this.xv, 0));
+    (this.y < this.size) && (this.y = this.size + 1, this.yv = Math.max(this.yv, 0));
+    (this.y > config.mapScale - this.size) && (this.y = config.mapScale - this.size - 1, this.yv = Math.min(this.yv, 0));
   }
   update(delta) {
     if (this.alive) {
@@ -66,6 +70,7 @@ class Player {
   }
   sendPosition() {
     let socket = this.socket;
+    this.peek();
     socket.emit('a');
     socket.emit('3', [
       this.id,
