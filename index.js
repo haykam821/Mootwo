@@ -49,7 +49,6 @@ class Player {
     this.skin = 0;
     this.size = config.playerScale;
     this.viewedObjects = [];
-    this.food = this.wood = this.stone = this.points = 0;
     this.food = this.wood = this.stone = this.points = this.kills = 0;
     this.heldItem = -1;
     this.devMods = {
