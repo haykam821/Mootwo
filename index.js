@@ -18,12 +18,14 @@ class Player {
     this.name = 'unknown';
     this.skin = 0;
     this.size = config.playerScale;
+    this.viewedObjects = [];
     
     this.aimAngle = 0;
     this.movement = null;
     this.kill();
   }
   updateMovement(delta) {
+    this.peek();
     let config = this.server.config;
     let tx = 0;
     let ty = 0;
@@ -46,6 +48,20 @@ class Player {
         this.untilSend = this.server.config.clientSendRate;
         this.sendPosition();
       }
+    }
+  }
+  peek() {
+    var old = this.viewedObjects;
+    var view = this.server.viewObjects(this.x, this.y);
+    var sending = [];
+    for (let i of view) {
+      if (old[i.id]) continue;
+      old[i.id] = true;
+      sending.push(...i.data);
+    }
+    if (sending.length) {
+      console.log(2)
+      this.socket.emit('6', sending)
     }
   }
   sendPosition() {
@@ -92,7 +108,7 @@ class Player {
       this.name = data.name.length > 15 || !data.name ? 'unknown' : data.name;
       this.skin = data.skin;
       this.spawn();
-      socket.emit('6', this.server.view())
+      this.peek();
     });
   }
   destroy() {
@@ -174,10 +190,39 @@ class Server {
       }
     }
   }
+  viewObjects(x, y) {
+    let config = this.config;
+    let visibles = [];
+    let width = config.maxScreenWidth;
+    let height = config.maxScreenHeight;
+    for (let i of this.objects)
+      if (
+        i.y + height > y &&
+        i.y - height < y &&
+        i.x + width > x &&
+        i.x - width < x
+      ) visibles.push(i);
+    return visibles;
+  }
+  viewPlayers(x, y) {
+    let config = this.config;
+    let visibles = [];
+    let width = config.maxScreenWidth;
+    let height = config.maxScreenHeight;
+    for (let i of this.players)
+      if (
+        i.y + height > y &&
+        i.y - height < y &&
+        i.x + width > x &&
+        i.x - width < x
+      ) visibles.push(i);
+    return visibles;
+  }
   generateWorld() {
     let config = this.config;
     let areaCount = config.areaCount;
     let mapScale = config.mapScale;
+    let riverWidth = config.riverWidth;
     let areaSize = mapScale / areaCount;
     let all = [];
     let id = 0;
@@ -186,12 +231,17 @@ class Server {
         for (let i = 0; i < config.treesPerArea; i++) {
           let x = randInt(areaSize * afx, areaSize * atx);
           let y = randInt(areaSize * afy, areaSize * aty);
-          all.push(new Resource(this, id++, x, y, randChoose(config.treeScales), 'wood'));
+          if (y < mapScale - config.snowBiomeTop && (
+              y > (mapScale + riverWidth) / 2 ||
+              y < (mapScale - riverWidth) / 2)
+            ) all.push(new Resource(this, id++, x, y, randChoose(config.treeScales), 'wood'));
         }
         for (let i = 0; i < config.bushesPerArea; i++) {
           let x = randInt(areaSize * afx, areaSize * atx);
           let y = randInt(areaSize * afy, areaSize * aty);
-          all.push(new Resource(this, id++, x, y, randChoose(config.bushScales), 'food'));
+          if (y > (mapScale + riverWidth) / 2 ||
+              y < (mapScale - riverWidth) / 2
+            ) all.push(new Resource(this, id++, x, y, randChoose(config.bushScales), 'food'));
         }
       }
     }
@@ -203,16 +253,9 @@ class Server {
     for (let i = 0; i < config.goldOres; i++) {
       let x = randInt(0, mapScale);
       let y = randInt(0, mapScale);
-      all.push(new Resource(this, id++, x, y, 0, 'points'));
+      all.push(new Resource(this, id++, x, y, 50, 'points'));
     }
     this.objects = all;
-  }
-  view() {
-    let all = [];
-    for (let i of this.objects) {
-      all.push(...i.data);
-    }
-    return all;
   }
   allocatePosition(size) {
     let scale = this.config.mapScale;
@@ -256,6 +299,10 @@ let app = new Server({
   treeScales: [140, 145, 150, 155],
   bushScales: [80, 85, 95],
   rockScales: [80, 85, 90],
+  maxScreenWidth: 1920,
+  maxScreenHeight: 1080,
+  snowBiomeTop: 2400,
+  riverWidth: 724,
 });
 
 for (let i = 5000; i <= 5010; i++) {
