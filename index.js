@@ -54,7 +54,7 @@ class Player {
       sizeFactor: 1,
       isDev: false,
     };
-    
+
     this.aimAngle = 0;
     this.movement = null;
     this.kill();
@@ -117,7 +117,7 @@ class Player {
       this.id,
       this.x,
       this.y,
-      -2.26,
+      this.aimAngle,
       -1,
       0,
       0,
@@ -319,7 +319,8 @@ class Player {
     this.sendSelfStatus();
   }
   sendSelfStatus() {
-    this.socket.emit('2', [this.socket.id,this.id,this.name,this.x,this.y,29,100,100,this.size,this.skin],true);
+    this.socket.emit('2', [this.socket.id,this.id,this.name,this.x,this.y,this.aimAngle,100,100,this.size,this.skin],true);
+    this.socket.broadcast.emit('2', [this.socket.id,this.id,this.name,this.x,this.y,this.aimAngle,100,100,this.size,this.skin],false);
   }
   hitResource(type) {
 
