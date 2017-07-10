@@ -54,6 +54,7 @@ class Player {
     this.aimAngle = 0;
     this.movement = null;
     this.attacking = false;
+    this.manualAttack = false;
     this.autoAttack = false;
     this.kill();
     this.attackReady = true;
@@ -140,9 +141,10 @@ class Player {
 
     socket.on("4", data => {
       if (data == 0){
-        this.attacking = this.autoAttack === true ? true : false;
+        this.manualAttack = false;
+        this.attacking = this.autoAttack ? true : false;
       }else{
-        this.attacking = true;
+        this.manualAttack = this.attacking = true;
       }
       if (this.attacking === true){
         this.attackInterval = setInterval(() => {
@@ -162,9 +164,9 @@ class Player {
     socket.on("7", data => {
       if (data == 1){
         this.autoAttack = !this.autoAttack;
-        this.attacking = this.autoAttack === true ? true : false;
+        this.attacking = (this.autoAttack || this.manualAttack) ? true : false;
       }
-      if (this.autoAttack === true){
+      if (this.attacking === true){
         this.attackInterval = setInterval(() => {
           if (this.attacking === true){
             if (this.attackReady === true){
