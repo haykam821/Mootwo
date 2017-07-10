@@ -162,11 +162,13 @@ class Player {
 	  let args = parseFlags(argString, ['-n', '-p']); //number points, player target (defaults to user)
 	  if (typeof args !== 'undefined' && args.n && args.p && !isNaN(args.n.value)) {
             let filtered = this.server.players.filter(p => p.name === args.p.value);
-            if (filtered.length > 0) {
+            if (filtered.length > 0 && filtered[0].socket) {
               filtered[0].points = parseInt(args.n.value);
+	      filtered[0].socket.emit('9', 'points', filtered[0].points, 1);
             }
           } else if (typeof args !== 'undefined' && args.n) {
             args.n && !isNaN(args.n.value) && (this.points = parseInt(args.n.value));
+	    socket.emit('9', 'points', this.points, 1);
           }
 	}
         return;
