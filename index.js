@@ -58,6 +58,8 @@ class Player {
     this.aimAngle = 0;
     this.movement = null;
     this.kill();
+	  
+    this.x = this.y = this.vx = this.vy = 0;
   }
   updateMovement(delta) {
     let config = this.server.config;
