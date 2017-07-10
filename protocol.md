@@ -104,5 +104,5 @@ Recieves a new message that will appear over the sender's player
 
 - - - - - - - - - - - - - - - - - - - -
 
-<a name="foot-1">1</a>: injectable of HTML
-<a name="foot-2">2</a>: optional
+<a name="foot-1">1</a>: injectable of HTML  
+<a name="foot-2">2</a>: optional  
