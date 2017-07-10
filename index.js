@@ -140,18 +140,15 @@ class Player {
     });
 
     socket.on("4", data => {
-<<<<<<< HEAD
       if (data == 0){
         this.manualAttack = false;
         this.attacking = this.autoAttack ? true : false;
       }else{
         this.manualAttack = this.attacking = true;
-=======
       if (!data) {
         this.attacking = this.autoAttack === true ? true : false;
       } else {
         this.attacking = true;
->>>>>>> d2c59f0e8ebbbdde93e3ab384f799c1a37c30c3f
       }
       if (this.attacking === true){
         this.attackInterval = setInterval(() => {
