@@ -12,12 +12,29 @@ class Player {
     this.server = server;
     this.untilSend = config.clientSendRate;
     this.name = 'unknown'
+    this.aimAngle = 0
+    this.movement = null
     this.kill();
   }
   update(delta) {
     if (this.alive) {
       this.x += this.vx;
       this.y += this.vy;
+      if (this.movement != null) {
+        var tx = Math.cos(acc);
+        var ty = Math.sin(acc);
+        var i = Math.sqrt(tx * tx + ty * ty);
+        if (i !== 0) {
+          tx /= i;
+          ty /= i;
+        }
+        if (x) {
+          vx += tx * 0.0016 * delta * 35 
+        }
+        if (y) {
+          vy += ty * 0.0016 * delta * 35 
+        }
+      }
       this.xv *= Math.pow(this.config.playerDecel, delta);
       this.yv *= Math.pow(this.config.playerDecel, delta);
       this.untilSend--
@@ -39,7 +56,9 @@ class Player {
     socket.once('error', err => {
       console.log(err);
       this.destroy();
-    })
+    });
+    socket.on('2', angle => this.aimAngle = angle)
+    socket.on('3', angle => this.movement = angle)
     socket.once('disconnect', () => this.destroy());
     socket.emit('id', {
       teams: this.server.clans
@@ -47,6 +66,7 @@ class Player {
     socket.on('1', function (data) {
       this.name = data.name.length > 15 || !data.name ? 'unknown' : data.name;
       this.alive = true;
+      socket.emit('1', this.id);
     });
   }
   destroy() {
