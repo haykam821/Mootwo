@@ -1,26 +1,30 @@
-"use strict"
+'use strict';
+
 var repl = require('repl');
 var io = require('socket.io');
 
 var randInt = (min, max) => {
   return Math.floor(Math.random() * (max - min)) + min;
 };
+
 class Player {
   constructor(server, id) {
-    var config = this.config = server.config;
+    var config = server.config;
     this.id = id;
     this.clan = null;
     this.server = server;
-    this.untilSend = config.clientSendRate;
+    this.untilSend = 1;
+
     this.name = 'unknown';
+    this.skin = 0;
+    this.size = config.playerScale;
+    
     this.aimAngle = 0;
     this.movement = null;
-    this.size = config.playerScale;
     this.kill();
-    this.skin = 0;
   }
   updateMovement(delta) {
-    var config = this.config;
+    var config = this.server.config;
     var tx = 0;
     var ty = 0;
     if (this.movement != null) {
@@ -39,7 +43,7 @@ class Player {
       this.updateMovement(delta);
       this.untilSend--;
       if (!this.untilSend) {
-        this.untilSend = this.config.clientSendRate;
+        this.untilSend = this.server.config.clientSendRate;
         this.sendPosition();
       }
     }
@@ -86,9 +90,11 @@ class Player {
     this.vy = 0;
   }
   spawn() {
+    var config = this.server.config;
     this.alive = true;
-    this.x = randInt(0, this.config.mapScale);
-    this.y = randInt(0, this.config.mapScale);
+    var { x, y } = this.server.allocatePosition(this.size);
+    this.x = x;
+    this.y = y;
     this.slowDown();
     var socket = this.socket;
     socket.emit('1', this.id);
@@ -115,6 +121,18 @@ class Server {
         i.update(delta);
       }
     }
+  }
+  allocatePosition(size) {
+    var x = 0;
+    var y = 0;
+    while (true) {
+      x = randInt(0, config.mapScale);
+      y = randInt(0, config.mapScale);
+      if (true) { // check if there's nothing overlapping
+        break;
+      }
+    }
+    return { x, y };
   }
   handle(socket) {
     for (var i = 0; i < this.players.length; i++) {
