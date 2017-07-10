@@ -12,6 +12,8 @@ class Player {
     this.clan = null;
     this.server = server;
     this.untilSend = 1;
+    
+    this.lastPing = new Date();
 
     this.name = 'unknown';
     this.skin = 0;
