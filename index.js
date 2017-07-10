@@ -41,7 +41,6 @@ class Player {
     this.id = id;
     this.clan = null;
     this.server = server;
-    this.untilSend = 1;
     this.alive = false;
     
     this.lastPing = new Date('2017-07-09 5:57:00').getTime();
@@ -80,12 +79,10 @@ class Player {
     (this.y < this.size) && (this.y = this.size + 1, this.yv = Math.max(this.yv, 0));
     (this.y > config.mapScale - this.size) && (this.y = config.mapScale - this.size - 1, this.yv = Math.min(this.yv, 0));
   }
-  update(delta) {
+  update(delta, send) {
     if (this.alive) {
       this.updateMovement(delta);
-      this.untilSend--;
-      if (!this.untilSend) {
-        this.untilSend = this.server.config.clientSendRate;
+      if (send) {
         this.sendPosition();
       }
     }
@@ -255,6 +252,7 @@ class Server {
   constructor(config) {
     this.config = config;
     this.players = Array(config.maxPlayers).fill(null);
+    this.untilSend = 1;
     this.lastRun = Date.now();
     this.clans = [];
     this.objects = [];
@@ -265,21 +263,27 @@ class Server {
     this.players[sid] = null;
   }
   update() {
+    var send = false;
+    if (!--this.untilSend) {
+      this.untilSend = this.config.clientSendRate;
+      send = true;
+    }
     let now = Date.now();
     let delta = now - this.lastRun;
     this.lastRun = now;
     let leaderboard = [];
     for (let i of this.players) {
-      if (i != null) {
-        i.update(delta);
-        if (i.alive === true && i.name !== null){
-          leaderboard.push([i.id, i.name, i.points]);
-        }
+      if (i == null) continue;
+      i.update(delta, send);
+      if (send && i.alive === true && i.name !== null){
+        leaderboard.push([i.id, i.name, i.points]);
       }
     }
-    leaderboard.sort((a, b) => a[2] - b[2]);
-    leaderboard = flatten(leaderboard);
-    this.players.forEach(r => r && r.socket.emit('5', leaderboard));
+    if (send) {
+      leaderboard.sort((a, b) => a[2] - b[2]);
+      leaderboard = flatten(leaderboard);
+      this.players.forEach(r => r && r.socket.emit('5', leaderboard));
+    }
   }
   viewObjects(x, y) {
     let config = this.config;
