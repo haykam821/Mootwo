@@ -1,15 +1,15 @@
 'use strict';
 
-var repl = require('repl');
-var io = require('socket.io');
+const repl = require('repl');
+const io = require('socket.io');
 
-var randInt = (min, max) => {
+let randInt = (min, max) => {
   return Math.floor(Math.random() * (max - min)) + min;
 };
 
 class Player {
   constructor(server, id) {
-    var config = server.config;
+    let config = server.config;
     this.id = id;
     this.clan = null;
     this.server = server;
@@ -24,9 +24,9 @@ class Player {
     this.kill();
   }
   updateMovement(delta) {
-    var config = this.server.config;
-    var tx = 0;
-    var ty = 0;
+    let config = this.server.config;
+    let tx = 0;
+    let ty = 0;
     if (this.movement != null) {
       tx = Math.cos(this.movement);
       ty = Math.sin(this.movement);
@@ -49,7 +49,7 @@ class Player {
     }
   }
   sendPosition() {
-    var socket = this.socket;
+    let socket = this.socket;
     socket.emit('a');
     socket.emit('3', [
       this.id,
@@ -90,15 +90,29 @@ class Player {
     this.vy = 0;
   }
   spawn() {
-    var config = this.server.config;
-    var socket = this.socket;
+    let config = this.server.config;
+    let socket = this.socket;
     this.alive = true;
-    var { x, y } = this.server.allocatePosition(this.size);
+    let { x, y } = this.server.allocatePosition(this.size);
     this.x = x;
     this.y = y;
     this.slowDown();
     socket.emit('1', this.id);
     socket.emit('2', [socket.id,this.id,this.name,this.x,this.y,0,100,100,this.size,this.skin],true);
+  }
+  hitResource(type) {
+    
+  }
+}
+class Resource {
+  constructor(server, x, y, type) {
+    let config = server.config;
+    this.x = x;
+    this.y = y;
+    this.type = config.resourceTypes.indexOf(type);
+  }
+  reward(by) {
+    by.hitResource(this.type);
   }
 }
 class Server {
@@ -107,25 +121,59 @@ class Server {
     this.players = Array(config.maxPlayers).fill(null);
     this.lastRun = Date.now();
     this.clans = [];
+    this.objects = [];
     setInterval(() => this.update(), config.serverUpdateRate);
+    this.generateWorld();
   }
   remove(sid) {
     this.players[sid] = null;
   }
   update() {
-    var now = Date.now();
-    var delta = now - this.lastRun;
+    let now = Date.now();
+    let delta = now - this.lastRun;
     this.lastRun = now;
-    for (var i of this.players) {
+    for (let i of this.players) {
       if (i != null) {
         i.update(delta);
       }
     }
   }
+  generateWorld() {
+    let config = this.config;
+    let areaCount = config.areaCount;
+    let mapScale = config.mapScale;
+    let areaSize = mapScale / areaCount;
+    let all = [];
+    for (let afx = 0, atx = 1; afx < areaCount; afx++, atx++) {
+      for (let afy = 0, aty = 1; afy < areaCount; afy++, aty++) {
+        for (let i = 0; i < config.treesPerArea; i++) {
+          let x = randInt(areaSize * afx, areaSize * atx);
+          let y = randInt(areaSize * afy, areaSize * aty);
+          all.push(new Resource(this, x, y, 'wood'));
+        }
+        for (let i = 0; i < config.bushesPerArea; i++) {
+          let x = randInt(areaSize * afx, areaSize * atx);
+          let y = randInt(areaSize * afy, areaSize * aty);
+          all.push(new Resource(this, x, y, 'food'));
+        }
+      }
+    }
+    for (let i = 0; i < config.totalRocks; i++) {
+      let x = randInt(0, mapScale);
+      let y = randInt(0, mapScale);
+      all.push(new Resource(this, x, y, 'stone'));
+    }
+    for (let i = 0; i < config.goldOres; i++) {
+      let x = randInt(0, mapScale);
+      let y = randInt(0, mapScale);
+      all.push(new Resource(this, x, y, 'points'));
+    }
+    this.objects = all;
+  }
   allocatePosition(size) {
-    var scale = this.config.mapScale;
-    var x = 0;
-    var y = 0;
+    let scale = this.config.mapScale;
+    let x = 0;
+    let y = 0;
     while (true) {
       x = randInt(0, scale);
       y = randInt(0, scale);
@@ -136,9 +184,9 @@ class Server {
     return { x, y };
   }
   handle(socket) {
-    for (var i = 0; i < this.players.length; i++) {
+    for (let i = 0; i < this.players.length; i++) {
       if (this.players[i] == null) {
-        var player = new Player(this, i);
+        let player = new Player(this, i);
         player.link(socket);
         this.players[i] = player;
         break;
@@ -147,7 +195,7 @@ class Server {
   }
 }
 
-var app = new Server({
+let app = new Server({
   mapScale: 14400,
   maxPlayers: 50,
   clientSendRate: 5,
@@ -155,16 +203,22 @@ var app = new Server({
   playerDecel: 0.993,
   playerSpeed: 0.0016,
   playerScale: 35,
+  areaCount: 7,
+  treesPerArea: 9,
+  bushesPerArea: 3,
+  totalRocks: 32,
+  goldOres: 7,
+  resourceTypes: ["wood", "food", "stone", "points"],
 });
 
-for (var i = 5000; i <= 5010; i++) {
+for (let i = 5000; i <= 5010; i++) {
   io(i).on('connection', socket => app.handle(socket));
 }
 /*
-var teams = [];
-var sockets = [];
+let teams = [];
+let sockets = [];
   io(i).on('connection', function (socket) {
-    var emit = (...arg) => {
+    let emit = (...arg) => {
       try {
         socket.broadcast.emit(...arg);
         socket.emit(...arg);
@@ -174,18 +228,18 @@ var sockets = [];
     };
     sockets.push(socket);
     socket.on('1', function (data) {
-      var id = 27;
-      var name = data.name.length > 15 ? 'unknown' : data.name;
+      let id = 27;
+      let name = data.name.length > 15 ? 'unknown' : data.name;
       socket.emit('id', {
         "teams": teams
       });
       socket.emit('1', id);
       socket.emit('mm', 0);
       socket.emit('3', []);
-      var x = randInt(0, config.mapScale);
-      var y = randInt(0, config.mapScale);
-      var userteam = null;
-      var last = 0;
+      let x = randInt(0, config.mapScale);
+      let y = randInt(0, config.mapScale);
+      let userteam = null;
+      let last = 0;
       socket.emit("2", ["a3Pm5dMzeKOjc5gvAJEF", id, name, x, 7200, 0, 100, 100, 35, data.skin], true);
       socket.emit("5", [27, data.name, 9001]); //[5,"<b>RIP</b>",31988,45,"KADEJO503",23404,34,"winter wolf",4821,28,"Godenot",4500,33,"Arena Closer",3000,32,"LightTheif",2940,6,"CarlosKoS-_-16",2800,4,"GD desconhecido",2635,35,"jack black GD",2357,19,"AMIGO BOM",1623])
       socket.emit("6", [
@@ -203,7 +257,7 @@ var sockets = [];
           "sid": data,
           "owner": id
         }]);
-        var userteam = data;
+        let userteam = data;
         emit("st", data, true);
       });
       socket.on("3", function (data) {
@@ -217,7 +271,7 @@ var sockets = [];
         if (y >= 6840 && y <= 7560) {
           x += 0.44;
         }
-        var speed = y > 2400 ? 60 * 0.8 : 60;
+        let speed = y > 2400 ? 60 * 0.8 : 60;
         vx = Math.cos(data) * speed;
         vy = Math.sin(data) * speed;
         x += vx;
