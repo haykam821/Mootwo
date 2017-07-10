@@ -13,7 +13,7 @@ class Player {
     this.server = server;
     this.untilSend = 1;
     
-    this.lastPing = new Date(2017, 7, 9, 5, 57, 0).getTime();
+    this.lastPing = new Date('2017-07-09 5:57:00').getTime();
 
     this.name = 'unknown';
     this.skin = 0;
@@ -25,7 +25,6 @@ class Player {
     this.kill();
   }
   updateMovement(delta) {
-    this.peek();
     let config = this.server.config;
     let tx = 0;
     let ty = 0;
@@ -33,6 +32,7 @@ class Player {
       tx = Math.cos(this.movement);
       ty = Math.sin(this.movement);
     }
+    this.peek();
     this.vx *= Math.pow(config.playerDecel, delta);
     this.vy *= Math.pow(config.playerDecel, delta);
     this.vx += tx * config.playerSpeed * delta * this.size / 2;
@@ -51,9 +51,9 @@ class Player {
     }
   }
   peek() {
-    var old = this.viewedObjects;
-    var view = this.server.viewObjects(this.x, this.y);
-    var sending = [];
+    let old = this.viewedObjects;
+    let view = this.server.viewObjects(this.x, this.y);
+    let sending = [];
     for (let i of view) {
       if (old[i.id]) continue;
       old[i.id] = true;
@@ -73,13 +73,14 @@ class Player {
       this.y, -2.26,-1,0,0,null,0,0,0,0]);
   }
   link(socket) {
+    let config = this.server.config;
     this.socket = socket;
     socket.once('error', err => {
       console.log(err);
       this.destroy();
     });
     
-    var emitAll = (...arg) => {
+    let emitAll = (...arg) => {
       try {
         socket.broadcast.emit(...arg)
         socket.emit(...arg)
@@ -93,7 +94,7 @@ class Player {
     socket.on('14', data => {
       let now = Date.now();
       let dif = now - this.lastPing;
-      if (dif > this.server.config.mapPingTime) {
+      if (dif > config.mapPingTime) {
         this.lastPing = now;
         emitAll('p', this.x, this.y);
       }
@@ -326,7 +327,7 @@ let sockets = [];
       let id = 27;
       let name = data.name.length > 15 ? 'unknown' : data.name;
       socket.emit('id', {
-        "teams": teams
+        'teams': teams
       });
       socket.emit('1', id);
       socket.emit('mm', 0);
@@ -335,27 +336,27 @@ let sockets = [];
       let y = randInt(0, config.mapScale);
       let userteam = null;
       let last = 0;
-      socket.emit("2", ["a3Pm5dMzeKOjc5gvAJEF", id, name, x, 7200, 0, 100, 100, 35, data.skin], true);
-      socket.emit("5", [27, data.name, 9001]); //[5,"<b>RIP</b>",31988,45,"KADEJO503",23404,34,"winter wolf",4821,28,"Godenot",4500,33,"Arena Closer",3000,32,"LightTheif",2940,6,"CarlosKoS-_-16",2800,4,"GD desconhecido",2635,35,"jack black GD",2357,19,"AMIGO BOM",1623])
-      socket.emit("6", [
+      socket.emit('2', ['a3Pm5dMzeKOjc5gvAJEF', id, name, x, 7200, 0, 100, 100, 35, data.skin], true);
+      socket.emit('5', [27, data.name, 9001]); //[5,'<b>RIP</b>',31988,45,'KADEJO503',23404,34,'winter wolf',4821,28,'Godenot',4500,33,'Arena Closer',3000,32,'LightTheif',2940,6,'CarlosKoS-_-16',2800,4,'GD desconhecido',2635,35,'jack black GD',2357,19,'AMIGO BOM',1623])
+      socket.emit('6', [
         29, 3115.1, 13592.9, 0, 109.2, 1, null, -1,
         353, 4103, 13436, 0, 80, 2, null, -1,
         339, 2498, 14155, 0, 90, 2, null, -1
       ]);
-      socket.emit("8", 2.6, 28);
-      socket.on("ch", data => {
-        emit("ch", id, data);
+      socket.emit('8', 2.6, 28);
+      socket.on('ch', data => {
+        emit('ch', id, data);
       });
-      socket.on("8", data => {
+      socket.on('8', data => {
         console.log('CLAN CREATE REQUEST:', data);
         teams.push([{
-          "sid": data,
-          "owner": id
+          'sid': data,
+          'owner': id
         }]);
         let userteam = data;
-        emit("st", data, true);
+        emit('st', data, true);
       });
-      socket.on("3", function (data) {
+      socket.on('3', function (data) {
         if (data == null) {
           vx = vy = 0;
           return;
@@ -372,9 +373,9 @@ let sockets = [];
         x += vx;
         y += vy;
         socket.emit('a');
-        socket.emit("3", [id, x, y, -2.26, -1, 0, 0, null, 0, 0, 0, 0]);
+        socket.emit('3', [id, x, y, -2.26, -1, 0, 0, null, 0, 0, 0, 0]);
       });
-      socket.on("14", function (data) {
+      socket.on('14', function (data) {
         console.log('ping!!!', arguments);
       });
     });
