@@ -87,7 +87,7 @@ Identify packets are sent as soon as the connection is made
 
 ### `1` - Spawned
 Emitted when you spawn or respawn
-* `id` - Your SIDgit
+* `id` - Your SID
 
 ### `5` - Leaderboard
 Leaderboard packets have the ID of `5`, can be 30 elements long, and is made of strings and ints
@@ -106,7 +106,7 @@ Object packets, like Leaderboard packets, is made of chunks
     * `y` - The Y position of this
     * `angle` - The angle of the object
     * `size` - The size of the object
-    * `resourceType` - The type of this object if it's a resource, null otherwise
+    * `resourceType`<sup>[3](#foot-3)</sup> - The type of this object if it's a resource, null otherwise
     * `buildingType` - The type of this object if it's a building, null otherwise
     * `owner` - The SID of the owner of this object, -1 if it's not owned
 
@@ -124,4 +124,6 @@ Recieves a new message that will appear over the sender's player
 - - - - - - - - - - - - - - - - - - - -
 
 <a name="foot-1">1</a>: injectable of HTML  
-<a name="foot-2">2</a>: optional  
+<a name="foot-2">2</a>: optional
+<a name="foot-3">3</a>: uncertain
+
