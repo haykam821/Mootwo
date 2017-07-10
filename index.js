@@ -39,6 +39,10 @@ class Player {
     this.vy += ty * config.playerSpeed * delta * this.size / 2;
     this.x += this.vx;
     this.y += this.vy;
+    (this.x < 0) && (this.x = 0);
+    (this.x > config.mapScale) && (this.x = config.mapScale);
+    (this.y < 0) && (this.y = 0);
+    (this.y > config.mapScale) && (this.y = config.mapScale);
   }
   update(delta) {
     if (this.alive) {
