@@ -29,6 +29,12 @@ function parseFlags(string, flagsArray) {
   return returnObject;
 }
 
+function flatten(arr) {
+  return arr.reduce(function (flat, toFlatten) {
+    return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
+  }, []);
+}
+
 class Player {
   constructor(server, id) {
     let config = server.config;
@@ -265,12 +271,12 @@ class Server {
       if (i != null) {
         i.update(delta);
 	      if (i.alive === true && i.name !== null){
-          leaderboard.push(i.id);
-          leaderboard.push(i.name);
-          leaderboard.push(i.points);
+          leaderboard.push([i.id, i.name, i.points]);
 	      }
       }
     }
+    leaderboard.sort((a, b) => a[2] - b[2]);
+    leaderboard = flatten(leaderboard);
     this.players.forEach(r => r && r.socket.emit("5", leaderboard));
   }
   viewObjects(x, y) {
