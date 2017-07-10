@@ -93,7 +93,7 @@ class Player {
     socket.on('14', data => {
       let now = Date.now();
       let dif = now - this.lastPing;
-      if (dif < 2500) {
+      if (dif > this.server.config.mapPingTime) {
         this.lastPing = now;
         emitAll('p', this.x, this.y);
       }
@@ -303,6 +303,7 @@ let app = new Server({
   maxScreenHeight: 1080,
   snowBiomeTop: 2400,
   riverWidth: 724,
+  mapPingTime: 2200,
 });
 
 for (let i = 5000; i <= 5010; i++) {
