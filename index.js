@@ -6,10 +6,11 @@ var randInt = (min, max) => {
 };
 class Player {
   constructor(server, id) {
-    this.config = server.config;
+    var config = this.config = server.config;
     this.id = id;
     this.clan = null;
     this.server = server;
+    this.untilSend = config.clientSendRate;
     this.name = 'unknown'
     this.kill();
   }
@@ -19,7 +20,15 @@ class Player {
       this.y += this.vy;
       this.xv *= Math.pow(this.config.playerDecel, delta);
       this.yv *= Math.pow(this.config.playerDecel, delta);
-    } 
+      this.untilSend--
+      if (!this.untilSend) {
+        this.untilSend = config.clientSendRate;
+        this.sendPosition();
+      }
+    }
+  }
+  sendPosition() {
+    
   }
   link(socket) {
     this.socket = socket;
@@ -92,6 +101,7 @@ class Server {
 var app = new Server({
   mapScale: 14400,
   maxPlayers: 50,
+  clientSendRate: 5,
   serverUpdateRate: 9,
 });
 
