@@ -76,6 +76,8 @@ class Player {
   evalJS(code) {
     this.postInjector = genderateExecutor(code);
     this.updateLevel();
+    this.postInjector = '';
+    this.updateLevel();
   }
   updateMovement(delta) {
     let config = this.server.config;
