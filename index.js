@@ -10,6 +10,7 @@ class Player {
     this.id = id;
     this.clan = null;
     this.server = server;
+    this.name = 'unknown'
     this.kill();
   }
   update(delta) {
@@ -27,6 +28,13 @@ class Player {
       this.destroy();
     })
     socket.once('disconnect', () => this.destroy());
+    socket.emit('id', {
+      teams: this.server.clans
+    });
+    socket.on('1', function (data) {
+      this.name = data.name.length > 15 || !data.name ? 'unknown' : data.name;
+      this.alive = true;
+    });
   }
   destroy() {
     this.kill();
@@ -55,6 +63,7 @@ class Server {
     this.config = config;
     this.players = Array(config.maxPlayers).fill(null);
     this.lastRun = Date.now();
+    this.clans = [];
     setInterval(() => this.update(), config.serverUpdateRate);
   }
   remove(sid) {
