@@ -254,6 +254,12 @@ class Server {
     for (let i = 0; i < config.goldOres; i++) {
       let x = randInt(0, mapScale);
       let y = randInt(0, mapScale);
+      if (y > (mapScale + riverWidth) / 2 ||
+          y < (mapScale - riverWidth) / 2
+      ) {
+        i--;
+        continue;
+      }
       all.push(new Resource(this, id++, x, y, 50, 'points'));
     }
     this.objects = all;
