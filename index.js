@@ -55,6 +55,7 @@ class Player {
     this.movement = null;
     this.kill();
     this.x = this.y = this.vx = this.vy = 0;
+    this.devMods = {hyperspeed: 1, sizeFactor: 1};
 
     this.attacking = false;
     this.manualAttack = false;
@@ -231,9 +232,13 @@ class Player {
             socket.emit('9', 'points', this.points, 1);
           }
         } else if (command === 'giant') {
-          let args = parseFlags(argString, ['-q']); // quiting being giant
+          let args = parseFlags(argString, ['-q', '-s']); // quitting being giant, size factor
           if (typeof args !== 'undefined' && args.q) {
             this.size = config.playerScale;
+          } else if (typeof args !== 'undefined' && args.s){
+            this.devMods.sizeFactor = parseFloat(args.s.value);
+            this.devMods.sizeFactor < 0 && (this.devMods.sizeFactor = 0);
+            this.size = config.playerScale * this.devMods.sizeFactor;
           } else if (typeof args !== 'undefined') {
             this.size = 60;
           }
