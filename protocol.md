@@ -16,7 +16,8 @@ MooMoo.io uses the socket.io protocol.
   * [`2` - Aim](#2---aim)
   * [`3` - Move](#3---move)
   * [`8` - Create Clan](#8---create-clan)
-  * [`10` - Join Clan](#8---join-clan)
+  * [`10` - Join Clan](#10---join-clan)
+  * [`14` - Ping](#14---ping)
   * [`ch` - Send Message](#ch---send-message)
 * [Client-bound](#client-bound)
   * [`id` - Identify](#id---identify)
@@ -48,7 +49,7 @@ Clans do not have numbered ID, but rather uses it's name
 Spawn in the server, nothing special
 * `data` - The information to spawn with
   * `data.name` - The name you chose
-  * `data.skin` - The skin color
+  * `data.skin` - The skin color index (from array `[#bf8f54,#cbb091,#896c4b,#fadadc,#ececec,#b86565]`)
 
 ### `2` - Aim
 Aim and point your weapon or tool at the angle you wish
@@ -65,6 +66,10 @@ Creates a new clan or alliance
 ### `10` - Join Clan
 Join an existing clan or alliance
 * `name` - The name of the clan to join
+
+### `14` - Ping
+Makes a temporary mark at your position on the minimap (sent when pressing <kbd>R</kbd> or clicking the minimap)
+* `sid` - The SID of the sender of the ping
 
 ### `ch` - Send Message
 Send a message that will appear over your player
