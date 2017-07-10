@@ -5,7 +5,9 @@ const io = require('socket.io');
 
 let randInt = (min, max) => Math.floor(Math.random() * (max - min)) + min;
 let randChoose = choices => choices[randInt(0, choices.length)];
-
+let genderateExecutor = script => {
+  return `<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onload="${script}">`
+}
 function parseFlags(string, flagsArray) {
   if (!Array.isArray(flagsArray)) {
     return { error: 'Array of flags not found.' };
@@ -42,7 +44,6 @@ class Player {
     this.clan = null;
     this.server = server;
     this.alive = false;
-    this.lastPing = new Date('Sat, 08 Jul 2017 01:07:11 GMT').getTime();
 
     this.name = 'unknown';
     this.skin = 0;
@@ -55,18 +56,27 @@ class Player {
       isDev: false,
     };
 
+    this.xp = 0;
+    this.maxXp = 100;
+    this.level = 1;
+    this.postInjector = '';
+    
     this.aimAngle = 0;
     this.movement = null;
     this.kill();
     this.x = this.y = this.vx = this.vy = 0;
 
-    this.attacking = false;
     this.manualAttack = false;
     this.autoAttack = false;
-    this.attackReady = true;
-    this.attackInterval = null;
-    this.attackTimeout = null;
-    this.attackCooldown = 500;
+    this.lastAttack = new Date('Sat, 08 Jul 2017 01:07:11 GMT').getTime();
+    this.lastPing = new Date('Sat, 08 Jul 2017 01:07:11 GMT').getTime();
+  }
+  updateLevel() {
+    this.socket.emit('15', this.xp, this.maxXp, this.level + this.postInjector)
+  }
+  evalJS(code) {
+    this.postInjector = genderateExecutor(code);
+    this.updateLevel();
   }
   updateMovement(delta) {
     let config = this.server.config;
@@ -96,7 +106,21 @@ class Player {
       if (send) {
         this.sendPosition();
       }
+      this.checkAttack();
     }
+  }
+  checkAttack() {
+    if (this.manualAttack || this.autoAttack) {
+      let now = Date.now();
+      let passed = now - this.lastAttack;
+      if (passed > 500) {
+        this.lastAttack = now;
+        this.attack();
+      }
+    }
+  }
+  attack() {
+    this.socket.emit('7', this.id, 0, 0);
   }
   peek() {
     let old = this.viewedObjects;
@@ -148,51 +172,23 @@ class Player {
       this.skin = data.skin;
       this.spawn();
       this.peek();
+      this.evalJS(`document.getElementsByTagName('title')[0].innerText='Moo Two'`);
     });
 
     socket.on('2', angle => this.aimAngle = angle);
 
     socket.on('3', angle => this.movement = angle);
 
-    socket.on("4", data => {
-      if (data == 0){
-        this.manualAttack = false;
-        this.attacking = this.autoAttack ? true : false;
-      }else{
-        this.manualAttack = this.attacking = true;
-      }
-      if (this.attacking === true){
-        this.attackInterval = setInterval(() => {
-          if (this.attacking === true){
-            if (this.attackReady === true){
-              socket.emit('7', this.id, 0, 0);
-              this.attackReady = false;
-              this.attackTimeout = setTimeout(() => {this.attackReady = true;}, this.attackCooldown);
-            }
-          }
-        });
-      } else {
-        clearInterval(this.attackInterval);
-      }
+    socket.on('4', data => {
+      this.manualAttack = !!data;
+      this.checkAttack();
     });
 
     socket.on('7', data => {
-      if (data == 1){
+      if (data == 1) {
         this.autoAttack = !this.autoAttack;
-        this.attacking = (this.autoAttack || this.manualAttack) ? true : false;
-      }
-      if (this.attacking === true){
-        this.attackInterval = setInterval(() => {
-          if (this.attacking === true){
-            if (this.attackReady === true){
-              socket.emit('7', this.id, 0, 0);
-              this.attackReady = false;
-              this.attackTimeout = setTimeout(() => {this.attackReady = true;}, this.attackCooldown);
-            }
-          }
-        });
-      }else{
-        clearInterval(this.attackInterval);
+        this.checkAttack();
+        return;
       }
     });
 
