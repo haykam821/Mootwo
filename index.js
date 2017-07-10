@@ -259,7 +259,7 @@ class Server {
 	      }
       }
     }
-    this.emit("5", leaderboard);
+    this.socket.emit("5", leaderboard);
   }
   viewObjects(x, y) {
     let config = this.config;
