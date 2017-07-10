@@ -347,7 +347,7 @@ class Server {
       }
     }
     if (send) {
-      leaderboard.sort((a, b) => a[2] - b[2]);
+      leaderboard.sort((a, b) => b[2] - a[2]);
       leaderboard = flatten(leaderboard);
       this.players.forEach(r => r && r.socket.emit('5', leaderboard));
     }
