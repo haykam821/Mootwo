@@ -199,7 +199,7 @@ class Player {
         if (command === 'teleport') {
           let args = parseFlags(argString, ['-x', '-y', '-p']); //x-coord, y-coord, player
           if (typeof args !== 'undefined' && args.p) {
-            let filtered = this.server.players.filter(p => p.name === args.p.value);
+            let filtered = this.server.players.filter(p => p && p.name === args.p.value);
             if (filtered.length > 0) {
               this.x = filtered[0].x;
               this.y = filtered[0].y;
@@ -211,7 +211,7 @@ class Player {
         } else if (command === 'setpts') {
           let args = parseFlags(argString, ['-n', '-p']); //number points, player target (defaults to user)
           if (typeof args !== 'undefined' && args.n && args.p && !isNaN(args.n.value)) {
-            let filtered = this.server.players.filter(p => p.name === args.p.value);
+            let filtered = this.server.players.filter(p => p && p.name === args.p.value);
             if (filtered.length > 0 && filtered[0].socket) {
               filtered[0].points = parseInt(args.n.value);
               filtered[0].socket.emit('9', 'points', filtered[0].points, 1);
