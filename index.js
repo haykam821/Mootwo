@@ -324,7 +324,7 @@ class Player {
       console.log('dev login');
       if (password === this.server.config.devPassword){
         this.devMods.isDev = true;
-        setTimeout(() => {socket.emit('ch', this.id, 'Logged in as Dev!');}, 250);
+        setTimeout(() => {socket.emit('ch', this.id, 'Logged in as Dev!');}, 500);
       }
     });
     socket.once('disconnect', () => this.destroy());
