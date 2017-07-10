@@ -123,11 +123,12 @@ class Server {
     }
   }
   allocatePosition(size) {
+    var scale = this.config.mapScale;
     var x = 0;
     var y = 0;
     while (true) {
-      x = randInt(0, config.mapScale);
-      y = randInt(0, config.mapScale);
+      x = randInt(0, scale);
+      y = randInt(0, scale);
       if (true) { // check if there's nothing overlapping
         break;
       }
