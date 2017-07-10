@@ -517,7 +517,7 @@ class Server {
         let player = new Player(this, i);
         player.link(socket);
         this.players[i] = player;
-        break;
+        return;
       }
     }
     socket.emit('d', 'server is full');
