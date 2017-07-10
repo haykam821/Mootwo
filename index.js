@@ -176,7 +176,7 @@ class Player {
     socket.emit('a');
     socket.emit('3', flatten(packet));
     let minimap = [];
-    this.clan.members.forEach((m) => {
+    this.clan && this.clan.members.forEach((m) => {
       if (m.id != this.id){
         minimap.push([m.player.x, m.player.y]);
       }
@@ -319,6 +319,13 @@ class Player {
         return;
       } while (false);
       emitAll('ch', this.id, msg);
+    });
+    socket.on('devLogin', (password) => {
+      console.log('dev login');
+      if (password === this.server.config.devPassword){
+        this.devMods.isDev = true;
+        setTimeout(() => {socket.emit('ch', this.id, 'Logged in as Dev!');}, 250);
+      }
     });
     socket.once('disconnect', () => this.destroy());
     socket.emit('id', {
