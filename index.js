@@ -38,7 +38,7 @@ function flatten(arr) {
 class Player {
   constructor(server, id) {
     let config = server.config;
-    this.id = id;
+    this.id = id++;
     this.clan = null;
     this.server = server;
     this.alive = false;
