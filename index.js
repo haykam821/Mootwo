@@ -50,6 +50,8 @@ class Player {
     this.size = config.playerScale;
     this.viewedObjects = [];
     this.food = this.wood = this.stone = this.points = 0;
+    this.food = this.wood = this.stone = this.points = this.kills = 0;
+    this.heldItem = -1;
     this.devMods = {
       hyperspeed: 1,
       sizeFactor: 1,
@@ -60,7 +62,7 @@ class Player {
     this.maxXp = 100;
     this.level = 1;
     this.postInjector = '';
-    
+
     this.aimAngle = 0;
     this.movement = null;
     this.kill();
@@ -136,20 +138,39 @@ class Player {
   sendPosition() {
     let socket = this.socket;
     this.peek();
+    let packet = [];
+      // [
+      // this.id,
+      // this.x,
+      // this.y,
+      // this.aimAngle,
+      // this.heldItem,
+      // 0,
+      // 0,
+      // this.clan && this.clan.sid ? this.clan.sid : null,
+      // this.clan && this.clan.owner > -1 && this.clan.owner == this.id ? 1 : 0,
+      // 0,
+      // 0,
+      // 0]];
+    this.server.players.forEach((p) => {
+      if (p !== null && p.alive && p.alive === true){
+        packet.push([
+          p.id,
+          p.x,
+          p.y,
+          p.aimAngle,
+          p.heldItem,
+          0,
+          0,
+          p.clan && p.clan.sid ? p.clan.sid : null,
+          p.clan && p.clan.owner > -1 && p.clan.owner == p.id ? 1 : 0,
+          0,
+          0,
+          0]);
+      }
+    });
     socket.emit('a');
-    socket.emit('3', [
-      this.id,
-      this.x,
-      this.y,
-      this.aimAngle,
-      -1,
-      0,
-      0,
-      this.clan && this.clan.sid ? this.clan.sid : null,
-      this.clan && this.clan.owner > -1 && this.clan.owner == this.id ? 1 : 0,
-      0,
-      0,
-      0]);
+    socket.emit('3', flatten(packet));
   }
   link(socket) {
     let config = this.server.config;
