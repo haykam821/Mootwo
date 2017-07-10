@@ -6,26 +6,28 @@ const io = require('socket.io');
 let randInt = (min, max) => Math.floor(Math.random() * (max - min)) + min;
 let randChoose = choices => choices[randInt(0, choices.length)];
 
-function parseFlags(string, flags_array){
-	if (!Array.isArray(flags_array)){
-		return {error: "Array of flags not found."};
+function parseFlags(string, flagsArray) {
+	if (!Array.isArray(flagsArray)) {
+		return { error: 'Array of flags not found.' };
 	}
-	var return_object = {};
-	var flag_locations = [[-1, "null", []]];
-	var string_array = string.split(' ');
-	for (let i = 0; i < string_array.length; i++){
-		if (flags_array.indexOf(string_array[i]) > -1){
-			flag_locations.push([i, string_array[i], []]);
-		}else{
-			flag_locations[flag_locations.length - 1][2].push(string_array[i]);
+	let returnObject = {};
+	let flagLocations = [[-1, 'null', []]];
+	let stringArray = string.split(' ');
+	for (let i = 0; i < stringArray.length; i++) {
+		if (flagsArray.indexOf(stringArray[i]) > -1) {
+			flagLocations.push([i, stringArray[i], []]);
+		} else {
+			flagLocations[flagLocations.length - 1][2].push(stringArray[i]);
 		}
 	}
-	for (let i = 0; i < flag_locations.length; i++){
-		return_object[flag_locations[i][1].replace(/^(-*)/g, '')] = {};
-		return_object[flag_locations[i][1].replace(/^(-*)/g, '')].flagLocation = flag_locations[i][0];
-		return_object[flag_locations[i][1].replace(/^(-*)/g, '')].value = flag_locations[i][2].join(' ');
+	for (let i = 0; i < flagLocations.length; i++){
+		let key = flagLocations[i][1].replace(/^(-*)/g, '');
+		returnObject[key] = {
+			flagLocation: flagLocations[i][0],
+			value: flagLocations[i][2].join(' '),
+		};
 	}
-	return return_object;
+	return returnObject;
 }
 
 class Player {
