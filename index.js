@@ -13,7 +13,7 @@ class Player {
     this.server = server;
     this.untilSend = 1;
     
-    this.lastPing = new Date(2017, 9, 7, 5, 57, 0);
+    this.lastPing = new Date(2017, 7, 9, 5, 57, 0).getTime();
 
     this.name = 'unknown';
     this.skin = 0;
@@ -63,29 +63,27 @@ class Player {
       this.destroy();
     });
     
-    var emit = (...arg) => {
+    var emitAll = (...arg) => {
       try {
         socket.broadcast.emit(...arg)
         socket.emit(...arg)
       } catch (e) {
-        sockets.forEach(a => a.emit(...arg))
       }
     }
     
     socket.on('2', angle => this.aimAngle = angle);
     socket.on('3', angle => this.movement = angle);
     
-    socket.on("14", data => {
-      var dif = Math.abs(this.lastPing.getTime() - new Date().getTime());
-      
-      //if (dif < 2500) {
-        this.lastPing = new Date();
-        emit("p",this.x,this.y);
-      //}
+    socket.on('14', data => {
+      let now = Date.now();
+      let dif = now - this.lastPing;
+      if (dif < 2500) {
+        this.lastPing = now;
+        emitAll('p', this.x, this.y);
+      }
     });
     
-    socket.on("ch", msg => emit("ch", this.id, msg));
-    
+    socket.on('ch', msg => emitAll('ch', this.id, msg));
     socket.once('disconnect', () => this.destroy());
     socket.emit('id', {
       teams: this.server.clans
@@ -94,6 +92,7 @@ class Player {
       this.name = data.name.length > 15 || !data.name ? 'unknown' : data.name;
       this.skin = data.skin;
       this.spawn();
+      socket.emit('6', this.server.view())
     });
   }
   destroy() {
@@ -127,15 +126,29 @@ class Player {
   }
 }
 class Resource {
-  constructor(server, x, y, size, type) {
+  constructor(server, id, x, y, size, type) {
     let config = server.config;
     this.x = x;
     this.y = y;
+    this.id = id;
     this.type = config.resourceTypes.indexOf(type);
     this.size = size;
+    this.init();
   }
   reward(by) {
     by.hitResource(this.type);
+  }
+  init() {
+    this.data = [
+      this.id,
+      this.x,
+      this.y,
+      0,
+      this.size,
+      this.type,
+      null,
+      -1,
+    ];
   }
 }
 class Server {
@@ -167,31 +180,39 @@ class Server {
     let mapScale = config.mapScale;
     let areaSize = mapScale / areaCount;
     let all = [];
+    let id = 0;
     for (let afx = 0, atx = 1; afx < areaCount; afx++, atx++) {
       for (let afy = 0, aty = 1; afy < areaCount; afy++, aty++) {
         for (let i = 0; i < config.treesPerArea; i++) {
           let x = randInt(areaSize * afx, areaSize * atx);
           let y = randInt(areaSize * afy, areaSize * aty);
-          all.push(new Resource(this, x, y, randChoose(config.treeScales), 'wood'));
+          all.push(new Resource(this, id++, x, y, randChoose(config.treeScales), 'wood'));
         }
         for (let i = 0; i < config.bushesPerArea; i++) {
           let x = randInt(areaSize * afx, areaSize * atx);
           let y = randInt(areaSize * afy, areaSize * aty);
-          all.push(new Resource(this, x, y, randChoose(config.bushScales), 'food'));
+          all.push(new Resource(this, id++, x, y, randChoose(config.bushScales), 'food'));
         }
       }
     }
     for (let i = 0; i < config.totalRocks; i++) {
       let x = randInt(0, mapScale);
       let y = randInt(0, mapScale);
-      all.push(new Resource(this, x, y, randChoose(config.rockScales), 'stone'));
+      all.push(new Resource(this, id++, x, y, randChoose(config.rockScales), 'stone'));
     }
     for (let i = 0; i < config.goldOres; i++) {
       let x = randInt(0, mapScale);
       let y = randInt(0, mapScale);
-      all.push(new Resource(this, x, y, 0, 'points'));
+      all.push(new Resource(this, id++, x, y, 0, 'points'));
     }
     this.objects = all;
+  }
+  view() {
+    let all = [];
+    for (let i of this.objects) {
+      all.push(...i.data);
+    }
+    return all;
   }
   allocatePosition(size) {
     let scale = this.config.mapScale;
