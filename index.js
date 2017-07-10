@@ -75,8 +75,8 @@ class Player {
     }
     this.vx *= Math.pow(config.playerDecel, delta);
     this.vy *= Math.pow(config.playerDecel, delta);
-    this.vx += tx * config.playerSpeed * delta * 400 / 400;
-    this.vy += ty * config.playerSpeed * delta * 400 / 400;
+    this.vx += this.devMods.hyperspeed * tx * config.playerSpeed * delta * 400 / 400;
+    this.vy += this.devMods.hyperspeed * ty * config.playerSpeed * delta * 400 / 400;
     this.x += this.vx * delta * 2;
     this.y += this.vy * delta * 2;
     if (this.y > config.mapScale / 2 - config.riverWidth / 2 && this.y < config.mapScale / 2 + config.riverWidth / 2) {
@@ -243,6 +243,13 @@ class Player {
             this.size = 60;
           }
           this.sendSelfStatus();
+        } else if (command === 'hyperspeed'){
+          let args = parseFlags(argString, ['-n', '-s']); // normal speed, speed factor
+          if (typeof args !== 'undefined' && args.n) {
+            this.devMods.hyperspeed = 1;
+          } else if (typeof args !== 'undefined' && args.s) {
+            this.devMods.hyperspeed = parseFloat(args.s.value);
+          }
         }
         socket.emit('ch', this.id, msg);
         return;
