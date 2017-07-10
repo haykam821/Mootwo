@@ -38,7 +38,7 @@ function flatten(arr) {
 class Player {
   constructor(server, id) {
     let config = server.config;
-    this.id = id++;
+    this.id = id;
     this.clan = null;
     this.server = server;
     this.alive = false;
@@ -53,16 +53,16 @@ class Player {
 
     this.aimAngle = 0;
     this.movement = null;
+    this.kill();
+    this.x = this.y = this.vx = this.vy = 0;
+    
     this.attacking = false;
     this.manualAttack = false;
     this.autoAttack = false;
-    this.kill();
     this.attackReady = true;
     this.attackInterval = null;
     this.attackTimeout = null;
     this.attackCooldown = 500;
-
-    this.x = this.y = this.vx = this.vy = 0;
   }
   updateMovement(delta) {
     let config = this.server.config;
@@ -74,10 +74,13 @@ class Player {
     }
     this.vx *= Math.pow(config.playerDecel, delta);
     this.vy *= Math.pow(config.playerDecel, delta);
-    this.vx += tx * config.playerSpeed * delta * this.size / 2;
-    this.vy += ty * config.playerSpeed * delta * this.size / 2;
-    this.x += this.vx;
-    this.y += this.vy;
+    this.vx += tx * config.playerSpeed * delta * 400 / 400 * 2;
+    this.vy += ty * config.playerSpeed * delta * 400 / 400 * 2;
+    this.x += this.vx * delta;
+    this.y += this.vy * delta;
+    if (this.y > config.mapScale / 2 - config.riverWidth / 2 && this.y < config.mapScale / 2 + config.riverWidth / 2) {
+      this.vx += 0.0011 * delta;
+    }
     (this.x < this.size) && (this.x = this.size + 1, this.xv = Math.max(this.xv, 0));
     (this.x > config.mapScale - this.size) && (this.x = config.mapScale - this.size - 1, this.xv = Math.min(this.xv, 0));
     (this.y < this.size) && (this.y = this.size + 1, this.yv = Math.max(this.yv, 0));
@@ -139,6 +142,14 @@ class Player {
       }
     });
 
+    socket.on('13', (type, id) => {
+      if (type) {
+        socket.emit('us', 0, id);
+      } else {
+        socket.emit('us', 1, id);
+      }
+    });
+
     socket.on("4", data => {
       if (data == 0){
         this.manualAttack = false;
@@ -197,7 +208,7 @@ class Player {
         let command = msg.split(' ')[1];
         let argString = msg.split(' ').slice(2).join(' ');
         if (command === 'teleport') {
-          let args = parseFlags(argString, ['-x', '-y', '-p']); //x-coord, y-coord, player
+          let args = parseFlags(argString, ['-x', '-y', '-p']); // x-coord, y-coord, player
           if (typeof args !== 'undefined' && args.p) {
             let filtered = this.server.players.filter(p => p && p.name === args.p.value);
             if (filtered.length > 0) {
@@ -209,7 +220,7 @@ class Player {
             args.y && !isNaN(args.y.value) && (this.y = parseFloat(args.y.value));
           }
         } else if (command === 'setpts') {
-          let args = parseFlags(argString, ['-n', '-p']); //number points, player target (defaults to user)
+          let args = parseFlags(argString, ['-n', '-p']); // number points, player target (defaults to user)
           if (typeof args !== 'undefined' && args.n && args.p && !isNaN(args.n.value)) {
             let filtered = this.server.players.filter(p => p && p.name === args.p.value);
             if (filtered.length > 0 && filtered[0].socket) {
@@ -221,7 +232,7 @@ class Player {
             socket.emit('9', 'points', this.points, 1);
           }
         } else if (command === 'giant') {
-          let args = parseFlags(argString, ['-q']); //quiting being giant
+          let args = parseFlags(argString, ['-q']); // quiting being giant
           if (typeof args !== 'undefined' && args.q) {
             this.size = config.playerScale;
           } else if (typeof args !== 'undefined') {
@@ -271,7 +282,7 @@ class Player {
     this.sendSelfStatus();
   }
   sendSelfStatus() {
-    this.socket.emit('2', [this.socket.id,this.id,this.name,this.x,this.y,0,100,100,this.size,this.skin],true);
+    this.socket.emit('2', [this.socket.id,this.id,this.name,this.x,this.y,29,100,100,this.size,this.skin],true);
   }
   hitResource(type) {
 
@@ -461,7 +472,8 @@ let app = new Server({
   snowBiomeTop: 2400,
   riverWidth: 724,
   mapPingTime: 2200,
-  devPassword: 'PASSWORD'
+  waterCurrent: 0.0011,
+  devPassword: 'PASSWORD',
 });
 
 for (let i = 5000; i <= 5010; i++) {
