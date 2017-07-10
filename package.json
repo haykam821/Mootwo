@@ -1,0 +1,20 @@
+{
+  "name": "mootwo",
+  "version": "1.4.2",
+  "description": "MooTwo is a project dedicated to create a custom private backend server MooMoo.io.",
+  "main": "index.js",
+  "dependencies": {
+    "socket.io": "^1.7.4"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/haykam821/Mootwo.git"
+  },
+  "author": "/u/haykam821#4929, CX#6768, Lucario \uD83C\uDF00 \u221D x\u00B2#9656",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/haykam821/Mootwo/issues"
+  },
+  "homepage": "https://github.com/haykam821/Mootwo#readme"
+}
