@@ -1,7 +1,6 @@
-var configDefault = {
-  mapScale: 14400,
-  maxPlayers: 50,
-};
+var repl = require('repl');
+var io = require('socket.io');
+
 var randInt = (min, max) => {
   return Math.floor(Math.random() * (max - min)) + min;
 };
@@ -12,11 +11,20 @@ class Player {
     this.clan = null;
     this.server = server;
   }
-  link() {
+  update() {
     
+  }
+  link(socket) {
+    this.socket = socket
+    socket.on('error', err => {
+      console.log(err);
+      this.destroy();
+    })
+    socket.on('disconnect', () => this.destroy());
   }
   destroy() {
     this.server.remove(this.id);
+    this.socket.disconnect();
   }
   spawn() {
     this.x = randInt(0, config.mapScale);
@@ -26,14 +34,22 @@ class Player {
   }
 }
 class Server {
-  constructor(config = configDefault) {
-    this.config = config
-    this.players = Array(config.maxPlayers).fill(null)
+  constructor(config) {
+    this.config = config;
+    this.players = Array(config.maxPlayers).fill(null);
+    setInterval(() => this.update(), config.serverUpdateRate);
   }
   remove(sid) {
-    this.players[sid] = null
+    this.players[sid] = null;
   }
-  spawn(connection) {
+  update() {
+    for (var i of this.players) {
+      if (i != null) {
+        i.update();
+      }
+    }
+  }
+  handle(connection) {
     for (var i = 0; i < 50; i++) {
       if (this.players[i] == null) {
         this.players[i] = new Player(this, i).link(connection);
@@ -42,11 +58,19 @@ class Server {
     }
   }
 }
+
+var app = new Server({
+  mapScale: 14400,
+  maxPlayers: 50,
+  serverUpdateRate: 9,
+});
+
+for (var i = 5000; i <= 5010; i++) {
+  io(i).on('connection', socket => app.handle(socket));
+}
+/*
 var teams = [];
 var sockets = [];
-var repl = require('repl');
-var io = require('socket.io');
-for (var i = 5000; i <= 5010; i++) {
   io(i).on('connection', function (socket) {
     var emit = (...arg) => {
       try {
@@ -115,6 +139,7 @@ for (var i = 5000; i <= 5010; i++) {
     });
   });
 }
+*/
 repl.start({
   eval: (a, _c, _f, cb) => {
     try {
