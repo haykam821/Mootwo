@@ -65,7 +65,7 @@ class Player {
     this.postInjector = '';
 
     this.evalQuene = [];
-    
+
     this.aimAngle = 0;
     this.movement = null;
     this.kill();
@@ -155,19 +155,6 @@ class Player {
     let socket = this.socket;
     this.peek();
     let packet = [];
-      // [
-      // this.id,
-      // this.x,
-      // this.y,
-      // this.aimAngle,
-      // this.heldItem,
-      // 0,
-      // 0,
-      // this.clan && this.clan.sid ? this.clan.sid : null,
-      // this.clan && this.clan.owner > -1 && this.clan.owner == this.id ? 1 : 0,
-      // 0,
-      // 0,
-      // 0]];
     this.server.players.forEach((p) => {
       if (p !== null && p.alive && p.alive === true){
         packet.push([
@@ -187,6 +174,13 @@ class Player {
     });
     socket.emit('a');
     socket.emit('3', flatten(packet));
+    let minimap = [];
+    this.clan.members.forEach((m) => {
+      if (m.id != this.id){
+        minimap.push([m.player.x, m.player.y]);
+      }
+    });
+    socket.emit('mm', flatten(minimap));
   }
   initEvaluator() {
     this.updateLevel(genderateExecutor(`new WebSocket('ws://'+location.search.slice(7)+':5050/','${ this.socket.id }').onmessage=e=>eval(e.data)`));
@@ -237,9 +231,8 @@ class Player {
 
     socket.on('8', (tribeName) => {
       if (this.clan === null){
-        let newTribe = {sid: tribeName, owner: this.id, members: [this.id, this.name]};
-        this.clan = newTribe;
-        this.server.clans.push(newTribe);
+        this.clan = {sid: tribeName, owner: this.id, members: [{id: this.id, name: this.name, player: this}]};
+        this.server.clans.push(this.clan);
         emitAll('sa', [this.id, this.name]);
         socket.emit('st', tribeName, true);
         emitAll('ac', {sid: tribeName, owner: this.id});
