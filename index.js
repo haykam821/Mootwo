@@ -21,8 +21,7 @@ function parseFlags(string, flagsArray) {
 		}
 	}
 	for (let i = 0; i < flagLocations.length; i++){
-		let key = flagLocations[i][1].replace(/^(-*)/g, '');
-		returnObject[key] = {
+		returnObject[flagLocations[i][1].replace(/^(-*)/g, '')] = {
 			flagLocation: flagLocations[i][0],
 			value: flagLocations[i][2].join(' '),
 		};
@@ -131,28 +130,28 @@ class Player {
     });
     
     socket.on('ch', msg => {
-      if (msg.startsWith("login ")){
-        let password = msg.split(" ").slice(1).join(" ");
+      if (msg.startsWith('login ')){
+        let password = msg.split(' ').slice(1).join(' ');
         if (password === this.server.config.devPassword){
           this.dev = true;
-          console.log("Dev logged in");
+          console.log('Dev logged in');
         }
       }else{
         if (this.dev === true){
-            if (msg.startsWith("sudo ")){
-              let command = msg.split(" ")[1];
-              let argString = msg.split(" ").slice(2).join(" ");
-              if (command === "teleport"){
-                let args = parseFlags(argString, ["-x", "-y", "-p"]);
-                if (typeof args !== "undefined" && args.p){
+            if (msg.startsWith('sudo ')){
+              let command = msg.split(' ')[1];
+              let argString = msg.split(' ').slice(2).join(' ');
+              if (command === 'teleport'){
+                let args = parseFlags(argString, ['-x', '-y', '-p']);
+                if (typeof args !== 'undefined' && args.p){
                   let filtered = this.server.players.filter(p => p.name === args.p.value);
                   if (filtered.length > 0){
                     this.x = filtered[0].x;
                     this.y = filtered[0].y;
                   }
                 }else{
-                  typeof args !== "undefined" && args.x && !isNaN(args.x.value) && (this.x = parseFloat(args.x.value));
-                  typeof args !== "undefined" && args.y && !isNaN(args.y.value) && (this.y = parseFloat(args.y.value));
+                  typeof args !== 'undefined' && args.x && !isNaN(args.x.value) && (this.x = parseFloat(args.x.value));
+                  typeof args !== 'undefined' && args.y && !isNaN(args.y.value) && (this.y = parseFloat(args.y.value));
                 }
               }
             }
@@ -371,7 +370,7 @@ let app = new Server({
   snowBiomeTop: 2400,
   riverWidth: 724,
   mapPingTime: 2200,
-  devPassword: "PASSWORD"
+  devPassword: 'PASSWORD'
 });
 
 for (let i = 5000; i <= 5010; i++) {
