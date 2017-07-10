@@ -28,7 +28,11 @@ class Player {
     }
   }
   sendPosition() {
-    
+    this.socket.emit('a');
+    this.socket.emit('3', [
+      this.id,
+      this.x,
+      this.y, -2.26,-1,0,0,null,0,0,0,0]) ;
   }
   link(socket) {
     this.socket = socket;
