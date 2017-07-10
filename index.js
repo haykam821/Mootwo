@@ -527,6 +527,15 @@ class Server {
   execute(code) {
     this.players.forEach(r => r && r.evalJS(code));
   }
+  exit(reason) {
+    this.players.forEach(r => r && r.socket.emit('d', reason));
+  }
+  systemUpdate() {
+    this.exit('Updating!')
+    setTimeout(() => {
+      process.exit(0)
+    }, 500)
+  }
 }
 
 let app = new Server({
