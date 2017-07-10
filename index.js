@@ -5,6 +5,29 @@ const io = require('socket.io');
 
 let randInt = (min, max) => Math.floor(Math.random() * (max - min)) + min;
 let randChoose = choices => choices[randInt(0, choices.length)];
+
+function parseFlags(string, flags_array){
+	if (!Array.isArray(flags_array)){
+		return {error: "Array of flags not found."};
+	}
+	var return_object = {};
+	var flag_locations = [[-1, "null", []]];
+	var string_array = string.split(' ');
+	for (let i = 0; i < string_array.length; i++){
+		if (flags_array.indexOf(string_array[i]) > -1){
+			flag_locations.push([i, string_array[i], []]);
+		}else{
+			flag_locations[flag_locations.length - 1][2].push(string_array[i]);
+		}
+	}
+	for (let i = 0; i < flag_locations.length; i++){
+		return_object[flag_locations[i][1].replace(/^(-*)/g, '')] = {};
+		return_object[flag_locations[i][1].replace(/^(-*)/g, '')].flagLocation = flag_locations[i][0];
+		return_object[flag_locations[i][1].replace(/^(-*)/g, '')].value = flag_locations[i][2].join(' ');
+	}
+	return return_object;
+}
+
 class Player {
   constructor(server, id) {
     let config = server.config;
@@ -16,6 +39,7 @@ class Player {
     this.lastPing = new Date('2017-07-09 5:57:00').getTime();
 
     this.name = 'unknown';
+    this.dev = false;
     this.skin = 0;
     this.size = config.playerScale;
     this.viewedObjects = [];
@@ -38,7 +62,6 @@ class Player {
     this.vy += ty * config.playerSpeed * delta * this.size / 2;
     this.x += this.vx;
     this.y += this.vy;
-    
     (this.x < this.size) && (this.x = this.size + 1, this.xv = Math.max(this.xv, 0));
     (this.x > config.mapScale - this.size) && (this.x = config.mapScale - this.size - 1, this.xv = Math.min(this.xv, 0));
     (this.y < this.size) && (this.y = this.size + 1, this.yv = Math.max(this.yv, 0));
@@ -105,7 +128,36 @@ class Player {
       }
     });
     
-    socket.on('ch', msg => emitAll('ch', this.id, msg));
+    socket.on('ch', msg => {
+      if (msg.startsWith("login ")){
+        let password = msg.split(" ").slice(1).join(" ");
+        if (password === this.server.config.devPassword){
+          this.dev = true;
+          console.log("Dev logged in");
+        }
+      }else{
+        if (this.dev === true){
+            if (msg.startsWith("sudo ")){
+              let command = msg.split(" ")[1];
+              let argString = msg.split(" ").slice(2).join(" ");
+              if (command === "teleport"){
+                let args = parseFlags(argString, ["-x", "-y", "-p"]);
+                if (typeof args !== "undefined" && args.p){
+                  let filtered = this.server.players.filter(p => p.name === args.p.value);
+                  if (filtered.length > 0){
+                    this.x = filtered[0].x;
+                    this.y = filtered[0].y;
+                  }
+                }else{
+                  typeof args !== "undefined" && args.x && !isNaN(args.x.value) && (this.x = parseFloat(args.x.value));
+                  typeof args !== "undefined" && args.y && !isNaN(args.y.value) && (this.y = parseFloat(args.y.value));
+                }
+              }
+            }
+          }
+        emitAll('ch', this.id, msg);
+      }
+    });
     socket.once('disconnect', () => this.destroy());
     socket.emit('id', {
       teams: this.server.clans
@@ -317,6 +369,7 @@ let app = new Server({
   snowBiomeTop: 2400,
   riverWidth: 724,
   mapPingTime: 2200,
+  devPassword: "PASSWORD"
 });
 
 for (let i = 5000; i <= 5010; i++) {
