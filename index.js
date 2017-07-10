@@ -252,14 +252,14 @@ class Server {
     for (let i of this.players) {
       if (i != null) {
         i.update(delta);
-	if (i.alive === true && i.name !== null){
-          leaderboard.push(p.id);
-          leaderboard.push(p.name);
-          leaderboard.push(p.points);
-	}
+	      if (i.alive === true && i.name !== null){
+          leaderboard.push(i.id);
+          leaderboard.push(i.name);
+          leaderboard.push(i.points);
+	      }
       }
     }
-    emitAll("5", leaderboard);
+    this.emit("5", leaderboard);
   }
   viewObjects(x, y) {
     let config = this.config;
