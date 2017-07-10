@@ -43,7 +43,7 @@ class Player {
     this.server = server;
     this.alive = false;
     
-    this.lastPing = new Date('2017-07-09 5:57:00').getTime();
+    this.lastPing = new Date('Sat, 08 Jul 2017 01:07:11 GMT').getTime();
 
     this.name = 'unknown';
     this.dev = false;
