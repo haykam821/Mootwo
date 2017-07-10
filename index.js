@@ -520,6 +520,7 @@ class Server {
         break;
       }
     }
+    socket.emit('d', 'server is full');
   }
   handleEval(player, web) {
     player.remote = web;
@@ -531,10 +532,10 @@ class Server {
     this.players.forEach(r => r && r.socket.emit('d', reason));
   }
   systemUpdate() {
-    this.exit('Updating!')
+    this.exit('updating');
     setTimeout(() => {
       process.exit(0)
-    }, 500)
+    }, 500);
   }
 }
 
