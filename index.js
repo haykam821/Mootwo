@@ -17,6 +17,7 @@ class Player {
     this.movement = null;
     this.size = config.playerScale;
     this.kill();
+    this.skin = 0;
   }
   updateMovement(delta) {
     var config = this.config;
@@ -25,11 +26,6 @@ class Player {
     if (this.movement != null) {
       tx = Math.cos(this.movement);
       ty = Math.sin(this.movement);
-      var i = Math.sqrt(tx * tx + ty * ty);
-      if (i !== 0) {
-        tx /= i;
-        ty /= i;
-      }
     }
     this.vx *= Math.pow(config.playerDecel, delta);
     this.vy *= Math.pow(config.playerDecel, delta);
@@ -70,6 +66,7 @@ class Player {
     });
     socket.on('1', data => {
       this.name = data.name.length > 15 || !data.name ? 'unknown' : data.name;
+      this.skin = data.skin;
       this.spawn();
     });
   }
@@ -93,9 +90,9 @@ class Player {
     this.x = randInt(0, this.config.mapScale);
     this.y = randInt(0, this.config.mapScale);
     this.slowDown();
-    var socket = this.socket
+    var socket = this.socket;
     socket.emit('1', this.id);
-    socket.emit("2",[socket.id,this.id,this.name,this.x,this.y,0,100,100,35,0],true);
+    socket.emit('2', [socket.id,this.id,this.name,this.x,this.y,0,100,100,this.size,this.skin],true);
   }
 }
 class Server {
@@ -120,7 +117,7 @@ class Server {
     }
   }
   handle(socket) {
-    for (var i = 0; i < 50; i++) {
+    for (var i = 0; i < this.players.length; i++) {
       if (this.players[i] == null) {
         var player = new Player(this, i);
         player.link(socket);
