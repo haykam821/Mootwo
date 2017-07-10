@@ -60,8 +60,21 @@ class Player {
       console.log(err);
       this.destroy();
     });
+    
+    var emit = (...arg) => {
+      try {
+        socket.broadcast.emit(...arg)
+        socket.emit(...arg)
+      } catch (e) {
+        sockets.forEach(a => a.emit(...arg))
+      }
+    }
+    
     socket.on('2', angle => this.aimAngle = angle);
     socket.on('3', angle => this.movement = angle);
+    
+    socket.on("14", data => emit("p",x,y));
+    
     socket.once('disconnect', () => this.destroy());
     socket.emit('id', {
       teams: this.server.clans
