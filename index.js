@@ -84,6 +84,8 @@ class Player {
       //}
     });
     
+    socket.on("ch", msg => emit("ch", msg, this.id));
+    
     socket.once('disconnect', () => this.destroy());
     socket.emit('id', {
       teams: this.server.clans
