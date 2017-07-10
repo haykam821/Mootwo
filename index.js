@@ -54,7 +54,7 @@ class Player {
       sizeFactor: 1,
       isDev: false,
     };
-
+    
     this.aimAngle = 0;
     this.movement = null;
     this.kill();
