@@ -62,6 +62,7 @@ class Player {
     this.xp = 0;
     this.maxXp = 100;
     this.level = 1;
+
     this.postInjector = '';
 
     this.evalQuene = [];
