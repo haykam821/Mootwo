@@ -155,6 +155,7 @@ class Resource {
     this.id = id;
     this.type = config.resourceTypes.indexOf(type);
     this.size = size;
+    this.angle = (Math.random() - 0.5) * Math.PI;
     this.init();
   }
   reward(by) {
@@ -165,7 +166,7 @@ class Resource {
       this.id,
       this.x,
       this.y,
-      0,
+      this.angle,
       this.size,
       this.type,
       null,
