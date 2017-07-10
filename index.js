@@ -259,7 +259,7 @@ class Server {
 	      }
       }
     }
-    this.players.forEach(r => r.socket.emit("5", leaderboard));
+    this.players.forEach(r => r && r.socket.emit("5", leaderboard));
   }
   viewObjects(x, y) {
     let config = this.config;
