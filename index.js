@@ -24,16 +24,16 @@ class Player {
     if (this.movement != null) {
       tx = Math.cos(this.movement);
       ty = Math.sin(this.movement);
-      var i = Math.sqrt(tx * tx + ty * ty);
+      /*var i = Math.sqrt(tx * tx + ty * ty);
       if (i !== 0) {
         tx /= i;
         ty /= i;
-      }
+      }*/
     }
     this.vx *= Math.pow(config.playerDecel, delta);
     this.vy *= Math.pow(config.playerDecel, delta);
-    this.vx += tx * config.playerSpeed * delta;
-    this.vy += ty * config.playerSpeed * delta;
+    this.vx += tx * config.playerSpeed * delta * 35;
+    this.vy += ty * config.playerSpeed * delta * 35;
     this.x += this.vx;
     this.y += this.vy;
   }
@@ -54,7 +54,7 @@ class Player {
       this.id,
       this.x,
       this.y, -2.26,-1,0,0,null,0,0,0,0]);
-    socket.emit("2",[socket.id,this.id,this.name,this.x,this.y,0,100,100,35,0],true)
+    //
   }
   link(socket) {
     this.socket = socket;
@@ -72,6 +72,7 @@ class Player {
       this.name = data.name.length > 15 || !data.name ? 'unknown' : data.name;
       this.spawn();
       socket.emit('1', this.id);
+      
     });
   }
   destroy() {
@@ -94,6 +95,8 @@ class Player {
     this.x = randInt(0, this.config.mapScale);
     this.y = randInt(0, this.config.mapScale);
     this.slowDown();
+    var socket = this.socket
+    socket.emit("2",[socket.id,this.id,this.name,this.x,this.y,0,100,100,35,0],true);
   }
 }
 class Server {
@@ -109,7 +112,7 @@ class Server {
   }
   update() {
     var now = Date.now();
-    var delta = this.lastRun - now;
+    var delta = now - this.lastRun;
     this.lastRun = now;
     for (var i of this.players) {
       if (i != null) {
