@@ -52,13 +52,13 @@ class Player {
     this.size = config.playerScale;
     this.viewedObjects = [];
     this.devMods = {};
-	  
+    
     this.food = this.wood = this.stone = this.points = 0;
     
     this.aimAngle = 0;
     this.movement = null;
     this.kill();
-	  
+    
     this.x = this.y = this.vx = this.vy = 0;
   }
   updateMovement(delta) {
@@ -167,18 +167,18 @@ class Player {
           }
           return;
         }else if (command === 'setpts'){
-	  let args = parseFlags(argString, ['-n', '-p']); //number points, player target (defaults to user)
-	  if (typeof args !== 'undefined' && args.n && args.p && !isNaN(args.n.value)) {
+    let args = parseFlags(argString, ['-n', '-p']); //number points, player target (defaults to user)
+    if (typeof args !== 'undefined' && args.n && args.p && !isNaN(args.n.value)) {
             let filtered = this.server.players.filter(p => p.name === args.p.value);
             if (filtered.length > 0 && filtered[0].socket) {
               filtered[0].points = parseInt(args.n.value);
-	      filtered[0].socket.emit('9', 'points', filtered[0].points, 1);
+        filtered[0].socket.emit('9', 'points', filtered[0].points, 1);
             }
           } else if (typeof args !== 'undefined' && args.n) {
             args.n && !isNaN(args.n.value) && (this.points = parseInt(args.n.value));
-	    socket.emit('9', 'points', this.points, 1);
+      socket.emit('9', 'points', this.points, 1);
           }
-	}
+  }
         return;
       } while (false);
       emitAll('ch', this.id, msg);
@@ -272,14 +272,14 @@ class Server {
     for (let i of this.players) {
       if (i != null) {
         i.update(delta);
-	      if (i.alive === true && i.name !== null){
+        if (i.alive === true && i.name !== null){
           leaderboard.push([i.id, i.name, i.points]);
-	      }
+        }
       }
     }
     leaderboard.sort((a, b) => a[2] - b[2]);
     leaderboard = flatten(leaderboard);
-    this.players.forEach(r => r && r.socket.emit("5", leaderboard));
+    this.players.forEach(r => r && r.socket.emit('5', leaderboard));
   }
   viewObjects(x, y) {
     let config = this.config;
