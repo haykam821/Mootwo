@@ -60,6 +60,16 @@ class Player {
       console.log(err);
       this.destroy();
     });
+    
+    var emit = (...arg) => {
+      try {
+        socket.broadcast.emit(...arg)
+        socket.emit(...arg)
+      } catch (e) {
+        sockets.forEach(a => a.emit(...arg))
+      }
+    }
+    
     socket.on('2', angle => this.aimAngle = angle);
     socket.on('3', angle => this.movement = angle);
     
@@ -86,7 +96,7 @@ class Player {
   kill() {
     this.alive = false;
     this.x = 0;
-    this.y = 0;
+    this.y = 0;no
     this.slowDown();
   }
   slowDown() {
