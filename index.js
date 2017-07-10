@@ -130,13 +130,14 @@ class Player {
     });
     
     socket.on('ch', msg => {
-      if (msg.startsWith('login ')){
+      if (msg.startsWith('login ')) {
         let password = msg.split(' ').slice(1).join(' ');
-        if (password === this.server.config.devPassword){
+        if (password === this.server.config.devPassword) {
           this.dev = true;
-          console.log('Dev logged in');
+  				socket.emit('ch', this.id, 'Logged in as Dev!');
         }
       } else if (this.dev && msg.startsWith('sudo ')) {
+ 				socket.emit('ch', this.id, msg);
         let command = msg.split(' ')[1];
         let argString = msg.split(' ').slice(2).join(' ');
         if (command === 'teleport') {
