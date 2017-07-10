@@ -1,3 +1,4 @@
+"use strict"
 var repl = require('repl');
 var io = require('socket.io');
 
@@ -16,40 +17,44 @@ class Player {
     this.movement = null
     this.kill();
   }
+  updateMovement(delta) {
+    var config = this.config;
+    var tx = 0;
+    var ty = 0;
+    if (this.movement != null) {
+      tx = Math.cos(this.movement);
+      ty = Math.sin(this.movement);
+      var i = Math.sqrt(tx * tx + ty * ty);
+      if (i !== 0) {
+        tx /= i;
+        ty /= i;
+      }
+    }
+    this.vx *= Math.pow(config.playerDecel, delta);
+    this.vy *= Math.pow(config.playerDecel, delta);
+    this.vx += tx * config.playerSpeed * delta;
+    this.vy += ty * config.playerSpeed * delta;
+    this.x += this.vx;
+    this.y += this.vy;
+  }
   update(delta) {
     if (this.alive) {
-      this.x += this.vx;
-      this.y += this.vy;
-      if (this.movement != null) {
-        var tx = Math.cos(acc);
-        var ty = Math.sin(acc);
-        var i = Math.sqrt(tx * tx + ty * ty);
-        if (i !== 0) {
-          tx /= i;
-          ty /= i;
-        }
-        if (x) {
-          vx += tx * 0.0016 * delta * 35 
-        }
-        if (y) {
-          vy += ty * 0.0016 * delta * 35 
-        }
-      }
-      this.xv *= Math.pow(this.config.playerDecel, delta);
-      this.yv *= Math.pow(this.config.playerDecel, delta);
+      this.updateMovement(delta);
       this.untilSend--
       if (!this.untilSend) {
-        this.untilSend = config.clientSendRate;
+        this.untilSend = this.config.clientSendRate;
         this.sendPosition();
       }
     }
   }
   sendPosition() {
-    this.socket.emit('a');
-    this.socket.emit('3', [
+    var socket = this.socket;
+    socket.emit('a');
+    socket.emit('3', [
       this.id,
       this.x,
-      this.y, -2.26,-1,0,0,null,0,0,0,0]) ;
+      this.y, -2.26,-1,0,0,null,0,0,0,0]);
+    socket.emit("2",[socket.id,this.id,this.name,this.x,this.y,0,100,100,35,0],true)
   }
   link(socket) {
     this.socket = socket;
@@ -57,15 +62,15 @@ class Player {
       console.log(err);
       this.destroy();
     });
-    socket.on('2', angle => this.aimAngle = angle)
-    socket.on('3', angle => this.movement = angle)
+    socket.on('2', angle => this.aimAngle = angle);
+    socket.on('3', angle => this.movement = angle);
     socket.once('disconnect', () => this.destroy());
     socket.emit('id', {
       teams: this.server.clans
     });
-    socket.on('1', function (data) {
+    socket.on('1', data => {
       this.name = data.name.length > 15 || !data.name ? 'unknown' : data.name;
-      this.alive = true;
+      this.spawn();
       socket.emit('1', this.id);
     });
   }
@@ -86,8 +91,8 @@ class Player {
   }
   spawn() {
     this.alive = true;
-    this.x = randInt(0, config.mapScale);
-    this.y = randInt(0, config.mapScale);
+    this.x = randInt(0, this.config.mapScale);
+    this.y = randInt(0, this.config.mapScale);
     this.slowDown();
   }
 }
@@ -112,10 +117,12 @@ class Server {
       }
     }
   }
-  handle(connection) {
+  handle(socket) {
     for (var i = 0; i < 50; i++) {
       if (this.players[i] == null) {
-        this.players[i] = new Player(this, i).link(connection);
+        var player = new Player(this, i);
+        player.link(socket);
+        this.players[i] = player;
         break;
       }
     }
@@ -127,6 +134,8 @@ var app = new Server({
   maxPlayers: 50,
   clientSendRate: 5,
   serverUpdateRate: 9,
+  playerDecel: 0.993,
+  playerSpeed: 0.0016
 });
 
 for (var i = 5000; i <= 5010; i++) {
