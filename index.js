@@ -91,12 +91,12 @@ class Player {
   }
   spawn() {
     var config = this.server.config;
+    var socket = this.socket;
     this.alive = true;
     var { x, y } = this.server.allocatePosition(this.size);
     this.x = x;
     this.y = y;
     this.slowDown();
-    var socket = this.socket;
     socket.emit('1', this.id);
     socket.emit('2', [socket.id,this.id,this.name,this.x,this.y,0,100,100,this.size,this.skin],true);
   }
