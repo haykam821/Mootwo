@@ -75,7 +75,14 @@ class Player {
     socket.on('2', angle => this.aimAngle = angle);
     socket.on('3', angle => this.movement = angle);
     
-    socket.on("14", data => emit("p",this.x,this.y));
+    socket.on("14", data => {
+      var dif = Math.abs(this.lastPing.getTime() - new Date().getTime());
+      
+      if (dif < 2500) {
+        this.lastPing = new Date();
+        emit("p",this.x,this.y);
+      }
+    });
     
     socket.once('disconnect', () => this.destroy());
     socket.emit('id', {
