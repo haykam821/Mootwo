@@ -354,7 +354,7 @@ class Server {
         i--;
         continue;
       }
-      all.push(new Resource(this, id++, x, y, 50, 'points'));
+      all.push(new Resource(this, id++, x, y, randChoose(config.rockScales), 'points'));
     }
     this.objects = all;
   }
