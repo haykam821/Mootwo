@@ -139,27 +139,27 @@ class Player {
     });
 
     socket.on("4", data => {
-      if (data == 0){
+      if (!data) {
         this.attacking = this.autoAttack === true ? true : false;
-      }else{
+      } else {
         this.attacking = true;
       }
       if (this.attacking === true){
         this.attackInterval = setInterval(() => {
           if (this.attacking === true){
             if (this.attackReady === true){
-              socket.emit("7", this.id, 0, 0);
+              socket.emit('7', this.id, 0, 0);
               this.attackReady = false;
               this.attackTimeout = setTimeout(() => {this.attackReady = true;}, this.attackCooldown);
             }
           }
         });
-      }else{
+      } else {
         clearInterval(this.attackInterval);
       }
     });
 
-    socket.on("7", data => {
+    socket.on('7', data => {
       if (data == 1){
         this.autoAttack = !this.autoAttack;
         this.attacking = this.autoAttack === true ? true : false;
@@ -168,7 +168,7 @@ class Player {
         this.attackInterval = setInterval(() => {
           if (this.attacking === true){
             if (this.attackReady === true){
-              socket.emit("7", this.id, 0, 0);
+              socket.emit('7', this.id, 0, 0);
               this.attackReady = false;
               this.attackTimeout = setTimeout(() => {this.attackReady = true;}, this.attackCooldown);
             }
@@ -218,12 +218,12 @@ class Player {
             args.n && !isNaN(args.n.value) && (this.points = parseInt(args.n.value));
             socket.emit('9', 'points', this.points, 1);
           }
-        } else if (command === 'fat') {
-          let args = parseFlags(argString, ['-q']); //quiting being fat
+        } else if (command === 'giant') {
+          let args = parseFlags(argString, ['-q']); //quiting being giant
           if (typeof args !== 'undefined' && args.q) {
             this.size = config.playerScale;
           } else if (typeof args !== 'undefined') {
-            this.size = config.playerScale * 2;
+            this.size = 60;
           }
           this.sendSelfStatus();
         }
