@@ -153,6 +153,7 @@ class Player {
             args.x && !isNaN(args.x.value) && (this.x = parseFloat(args.x.value));
             args.y && !isNaN(args.y.value) && (this.y = parseFloat(args.y.value));
           }
+          return;
         }
         return;
       } while (false);
