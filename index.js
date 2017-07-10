@@ -12,9 +12,10 @@ class Player {
     this.clan = null;
     this.server = server;
     this.untilSend = config.clientSendRate;
-    this.name = 'unknown'
-    this.aimAngle = 0
-    this.movement = null
+    this.name = 'unknown';
+    this.aimAngle = 0;
+    this.movement = null;
+    this.size = config.playerScale;
     this.kill();
   }
   updateMovement(delta) {
@@ -24,23 +25,23 @@ class Player {
     if (this.movement != null) {
       tx = Math.cos(this.movement);
       ty = Math.sin(this.movement);
-      /*var i = Math.sqrt(tx * tx + ty * ty);
+      var i = Math.sqrt(tx * tx + ty * ty);
       if (i !== 0) {
         tx /= i;
         ty /= i;
-      }*/
+      }
     }
     this.vx *= Math.pow(config.playerDecel, delta);
     this.vy *= Math.pow(config.playerDecel, delta);
-    this.vx += tx * config.playerSpeed * delta * 35;
-    this.vy += ty * config.playerSpeed * delta * 35;
+    this.vx += tx * config.playerSpeed * delta * this.size / 2;
+    this.vy += ty * config.playerSpeed * delta * this.size / 2;
     this.x += this.vx;
     this.y += this.vy;
   }
   update(delta) {
     if (this.alive) {
       this.updateMovement(delta);
-      this.untilSend--
+      this.untilSend--;
       if (!this.untilSend) {
         this.untilSend = this.config.clientSendRate;
         this.sendPosition();
@@ -54,7 +55,6 @@ class Player {
       this.id,
       this.x,
       this.y, -2.26,-1,0,0,null,0,0,0,0]);
-    //
   }
   link(socket) {
     this.socket = socket;
@@ -71,8 +71,6 @@ class Player {
     socket.on('1', data => {
       this.name = data.name.length > 15 || !data.name ? 'unknown' : data.name;
       this.spawn();
-      socket.emit('1', this.id);
-      
     });
   }
   destroy() {
@@ -96,6 +94,7 @@ class Player {
     this.y = randInt(0, this.config.mapScale);
     this.slowDown();
     var socket = this.socket
+    socket.emit('1', this.id);
     socket.emit("2",[socket.id,this.id,this.name,this.x,this.y,0,100,100,35,0],true);
   }
 }
@@ -138,7 +137,8 @@ var app = new Server({
   clientSendRate: 5,
   serverUpdateRate: 9,
   playerDecel: 0.993,
-  playerSpeed: 0.0016
+  playerSpeed: 0.0016,
+  playerScale: 35,
 });
 
 for (var i = 5000; i <= 5010; i++) {
