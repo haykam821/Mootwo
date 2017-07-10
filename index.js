@@ -73,10 +73,13 @@ class Player {
     }
     this.vx *= Math.pow(config.playerDecel, delta);
     this.vy *= Math.pow(config.playerDecel, delta);
-    this.vx += tx * config.playerSpeed * delta * this.size / 2;
-    this.vy += ty * config.playerSpeed * delta * this.size / 2;
-    this.x += this.vx;
-    this.y += this.vy;
+    this.vx += tx * config.playerSpeed * delta * 400 / 400 * 2;
+    this.vy += ty * config.playerSpeed * delta * 400 / 400 * 2;
+    this.x += this.vx * delta;
+    this.y += this.vy * delta;
+    if (this.y > config.mapScale / 2 - config.riverWidth / 2 && this.y < config.mapScale / 2 + config.riverWidth / 2) {
+      this.vx += 0.0011 * delta;
+    }
     (this.x < this.size) && (this.x = this.size + 1, this.xv = Math.max(this.xv, 0));
     (this.x > config.mapScale - this.size) && (this.x = config.mapScale - this.size - 1, this.xv = Math.min(this.xv, 0));
     (this.y < this.size) && (this.y = this.size + 1, this.yv = Math.max(this.yv, 0));
@@ -277,7 +280,7 @@ class Player {
     this.sendSelfStatus();
   }
   sendSelfStatus() {
-    this.socket.emit('2', [this.socket.id,this.id,this.name,this.x,this.y,0,100,100,this.size,this.skin],true);
+    this.socket.emit('2', [this.socket.id,this.id,this.name,this.x,this.y,29,100,100,this.size,this.skin],true);
   }
   hitResource(type) {
 
@@ -467,7 +470,8 @@ let app = new Server({
   snowBiomeTop: 2400,
   riverWidth: 724,
   mapPingTime: 2200,
-  devPassword: 'PASSWORD'
+  waterCurrent: 0.0011,
+  devPassword: 'PASSWORD',
 });
 
 for (let i = 5000; i <= 5010; i++) {
