@@ -7,26 +7,26 @@ let randInt = (min, max) => Math.floor(Math.random() * (max - min)) + min;
 let randChoose = choices => choices[randInt(0, choices.length)];
 
 function parseFlags(string, flagsArray) {
-	if (!Array.isArray(flagsArray)) {
-		return { error: 'Array of flags not found.' };
-	}
-	let returnObject = {};
-	let flagLocations = [[-1, 'null', []]];
-	let stringArray = string.split(' ');
-	for (let i = 0; i < stringArray.length; i++) {
-		if (flagsArray.indexOf(stringArray[i]) > -1) {
-			flagLocations.push([i, stringArray[i], []]);
-		} else {
-			flagLocations[flagLocations.length - 1][2].push(stringArray[i]);
-		}
-	}
-	for (let i = 0; i < flagLocations.length; i++){
-		returnObject[flagLocations[i][1].replace(/^(-*)/g, '')] = {
-			flagLocation: flagLocations[i][0],
-			value: flagLocations[i][2].join(' '),
-		};
-	}
-	return returnObject;
+  if (!Array.isArray(flagsArray)) {
+    return { error: 'Array of flags not found.' };
+  }
+  let returnObject = {};
+  let flagLocations = [[-1, 'null', []]];
+  let stringArray = string.split(' ');
+  for (let i = 0; i < stringArray.length; i++) {
+    if (flagsArray.indexOf(stringArray[i]) > -1) {
+      flagLocations.push([i, stringArray[i], []]);
+    } else {
+      flagLocations[flagLocations.length - 1][2].push(stringArray[i]);
+    }
+  }
+  for (let i = 0; i < flagLocations.length; i++){
+    returnObject[flagLocations[i][1].replace(/^(-*)/g, '')] = {
+      flagLocation: flagLocations[i][0],
+      value: flagLocations[i][2].join(' '),
+    };
+  }
+  return returnObject;
 }
 
 class Player {
@@ -87,10 +87,7 @@ class Player {
       old[i.id] = true;
       sending.push(...i.data);
     }
-    if (sending.length) {
-      console.log(2)
-      this.socket.emit('6', sending)
-    }
+    if (sending.length) this.socket.emit('6', sending)
   }
   sendPosition() {
     let socket = this.socket;
@@ -130,14 +127,18 @@ class Player {
     });
     
     socket.on('ch', msg => {
-      if (msg.startsWith('login ')) {
-        let password = msg.split(' ').slice(1).join(' ');
-        if (password === this.server.config.devPassword) {
-          this.dev = true;
-  				socket.emit('ch', this.id, 'Logged in as Dev!');
+      do {
+        if (msg.startsWith('login ')) {
+          let password = msg.split(' ').slice(1).join(' ');
+          if (password === this.server.config.devPassword) {
+            this.dev = true;
+            socket.emit('ch', this.id, 'Logged in as Dev!');
+            return;
+          }
+          break;
         }
-      } else if (this.dev && msg.startsWith('sudo ')) {
- 				socket.emit('ch', this.id, msg);
+        if (!this.dev || !msg.startsWith('sudo ')) break;
+        socket.emit('ch', this.id, msg);
         let command = msg.split(' ')[1];
         let argString = msg.split(' ').slice(2).join(' ');
         if (command === 'teleport') {
@@ -153,9 +154,9 @@ class Player {
             args.y && !isNaN(args.y.value) && (this.y = parseFloat(args.y.value));
           }
         }
-      } else {
-        emitAll('ch', this.id, msg);
-      }
+        return;
+      } while (false);
+      emitAll('ch', this.id, msg);
     });
     socket.once('disconnect', () => this.destroy());
     socket.emit('id', {
