@@ -78,10 +78,10 @@ class Player {
     socket.on("14", data => {
       var dif = Math.abs(this.lastPing.getTime() - new Date().getTime());
       
-      if (dif < 2500) {
+      //if (dif < 2500) {
         this.lastPing = new Date();
         emit("p",this.x,this.y);
-      }
+      //}
     });
     
     socket.once('disconnect', () => this.destroy());
