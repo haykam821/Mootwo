@@ -219,12 +219,13 @@ class Player {
             socket.emit('9', 'points', this.points, 1);
           }
         } else if (command === 'fat') {
-          let args = parseFlags(argString, ['-q']); //quiting being fat fat
+          let args = parseFlags(argString, ['-q']); //quiting being fat
           if (typeof args !== 'undefined' && args.q) {
             this.size = config.playerScale;
           } else if (typeof args !== 'undefined') {
             this.size = config.playerScale * 2;
           }
+          this.sendSelfStatus();
         }
         return;
       } while (false);
@@ -265,7 +266,10 @@ class Player {
     this.y = y;
     this.slowDown();
     socket.emit('1', this.id);
-    socket.emit('2', [socket.id,this.id,this.name,this.x,this.y,0,100,100,this.size,this.skin],true);
+    this.sendSelfStatus();
+  }
+  sendSelfStatus() {
+    this.socket.emit('2', [this.socket.id,this.id,this.name,this.x,this.y,0,100,100,this.size,this.skin],true);
   }
   hitResource(type) {
 
