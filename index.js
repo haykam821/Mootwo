@@ -13,7 +13,7 @@ class Player {
     this.server = server;
     this.untilSend = 1;
     
-    this.lastPing = new Date(2017, 9, 7, 5, 57, 0);.
+    this.lastPing = new Date(2017, 9, 7, 5, 57, 0);
 
     this.name = 'unknown';
     this.skin = 0;
