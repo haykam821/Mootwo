@@ -176,7 +176,7 @@ class Player {
     socket.emit('a');
     socket.emit('3', flatten(packet));
     let minimap = [];
-    this.clan.members.forEach((m) => {
+    this.clan && this.clan.members.forEach((m) => {
       if (m.id != this.id){
         minimap.push([m.player.x, m.player.y]);
       }
