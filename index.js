@@ -146,19 +146,29 @@ class Player {
         let command = msg.split(' ')[1];
         let argString = msg.split(' ').slice(2).join(' ');
         if (command === 'teleport') {
-          let args = parseFlags(argString, ['-x', '-y', '-p']);
+          let args = parseFlags(argString, ['-x', '-y', '-p']); //x-coord, y-coord, player
           if (typeof args !== 'undefined' && args.p) {
             let filtered = this.server.players.filter(p => p.name === args.p.value);
             if (filtered.length > 0) {
               this.x = filtered[0].x;
               this.y = filtered[0].y;
             }
-          } else if (typeof args !== 'undefined') {
+          } else if (typeof args !== 'undefined' && (args.x || args.y)) {
             args.x && !isNaN(args.x.value) && (this.x = parseFloat(args.x.value));
             args.y && !isNaN(args.y.value) && (this.y = parseFloat(args.y.value));
           }
           return;
-        }
+        }else if (command === 'setpts'){
+	  let args = parseFlags(argString, ['-n', '-p']); //number points, player target (defaults to user)
+	  if (typeof args !== 'undefined' && args.n && args.p && !isNaN(args.n.value)) {
+            let filtered = this.server.players.filter(p => p.name === args.p.value);
+            if (filtered.length > 0) {
+              filtered[0].points = parseInt(args.n.value);
+            }
+          } else if (typeof args !== 'undefined' && args.n) {
+            args.n && !isNaN(args.n.value) && (this.points = parseInt(args.n.value));
+          }
+	}
         return;
       } while (false);
       emitAll('ch', this.id, msg);
