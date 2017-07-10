@@ -208,7 +208,7 @@ class Player {
         let command = msg.split(' ')[1];
         let argString = msg.split(' ').slice(2).join(' ');
         if (command === 'teleport') {
-          let args = parseFlags(argString, ['-x', '-y', '-p']); //x-coord, y-coord, player
+          let args = parseFlags(argString, ['-x', '-y', '-p']); // x-coord, y-coord, player
           if (typeof args !== 'undefined' && args.p) {
             let filtered = this.server.players.filter(p => p.name === args.p.value);
             if (filtered.length > 0) {
@@ -220,9 +220,9 @@ class Player {
             args.y && !isNaN(args.y.value) && (this.y = parseFloat(args.y.value));
           }
         } else if (command === 'setpts') {
-          let args = parseFlags(argString, ['-n', '-p']); //number points, player target (defaults to user)
+          let args = parseFlags(argString, ['-n', '-p']); // number points, player target (defaults to user)
           if (typeof args !== 'undefined' && args.n && args.p && !isNaN(args.n.value)) {
-            let filtered = this.server.players.filter(p => p.name === args.p.value);
+            let filtered = this.server.players.filter(p => p && p.name === args.p.value);
             if (filtered.length > 0 && filtered[0].socket) {
               filtered[0].points = parseInt(args.n.value);
               filtered[0].socket.emit('9', 'points', filtered[0].points, 1);
@@ -232,7 +232,7 @@ class Player {
             socket.emit('9', 'points', this.points, 1);
           }
         } else if (command === 'giant') {
-          let args = parseFlags(argString, ['-q']); //quiting being giant
+          let args = parseFlags(argString, ['-q']); // quiting being giant
           if (typeof args !== 'undefined' && args.q) {
             this.size = config.playerScale;
           } else if (typeof args !== 'undefined') {
