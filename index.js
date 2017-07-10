@@ -186,7 +186,7 @@ class Player {
     }
 
     socket.on('1', data => {
-      this.name = data.name.length > 15 || !data.name ? 'unknown' : data.name;
+      this.name = data.name.length > config.maxNameLength || !data.name ? 'unknown' : data.name;
       this.skin = data.skin;
       this.spawn();
       this.peek();
@@ -562,6 +562,7 @@ let app = new Server({
   riverWidth: 724,
   mapPingTime: 2200,
   waterCurrent: 0.0011,
+  maxNameLength: 15,
   devPassword: 'PASSWORD',
 });
 
