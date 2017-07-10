@@ -36,6 +36,7 @@ class Player {
     this.clan = null;
     this.server = server;
     this.untilSend = 1;
+    this.alive = false;
     
     this.lastPing = new Date('2017-07-09 5:57:00').getTime();
 
@@ -44,6 +45,9 @@ class Player {
     this.skin = 0;
     this.size = config.playerScale;
     this.viewedObjects = [];
+    this.devMods = {};
+	  
+    this.food = this.wood = this.stone = this.points = 0;
     
     this.aimAngle = 0;
     this.movement = null;
@@ -242,11 +246,18 @@ class Server {
     let now = Date.now();
     let delta = now - this.lastRun;
     this.lastRun = now;
+    let leaderboard = [];
     for (let i of this.players) {
       if (i != null) {
         i.update(delta);
+	if (i.alive === true && i.name !== null){
+          leaderboard.push(p.id);
+          leaderboard.push(p.name);
+          leaderboard.push(p.points);
+	}
       }
     }
+    emitAll("5", leaderboard);
   }
   viewObjects(x, y) {
     let config = this.config;
