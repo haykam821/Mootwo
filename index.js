@@ -126,7 +126,16 @@ class Player {
     socket.emit('3', [
       this.id,
       this.x,
-      this.y, -2.26,-1,0,0,null,0,0,0,0]);
+      this.y,
+      -2.26,
+      -1,
+      0,
+      0,
+      this.clan && this.clan.sid ? this.clan.sid : null,
+      this.clan && this.clan.owner > -1 && this.clan.owner == this.id ? 1 : 0,
+      0,
+      0,
+      0]);
   }
   link(socket) {
     let config = this.server.config;
@@ -144,25 +153,16 @@ class Player {
       }
     }
 
+    socket.on('1', data => {
+      this.name = data.name.length > 15 || !data.name ? 'unknown' : data.name;
+      this.skin = data.skin;
+      this.spawn();
+      this.peek();
+    });
+
     socket.on('2', angle => this.aimAngle = angle);
+
     socket.on('3', angle => this.movement = angle);
-
-    socket.on('14', data => {
-      let now = Date.now();
-      let dif = now - this.lastPing;
-      if (dif > config.mapPingTime) {
-        this.lastPing = now;
-        emitAll('p', this.x, this.y);
-      }
-    });
-
-    socket.on('13', (type, id) => {
-      if (type) {
-        socket.emit('us', 0, id);
-      } else {
-        socket.emit('us', 1, id);
-      }
-    });
 
     socket.on('4', data => {
       this.manualAttack = !!data;
@@ -174,6 +174,34 @@ class Player {
         this.autoAttack = !this.autoAttack;
         this.checkAttack();
         return;
+      }
+    });
+
+    socket.on('8', (tribeName) => {
+      if (this.clan === null){
+        let newTribe = {sid: tribeName, owner: this.id, members: [this.id, this.name]};
+        this.clan = newTribe;
+        this.server.clans.push(newTribe);
+        emitAll('sa', [this.id, this.name]);
+        socket.emit('st', tribeName, true);
+        emitAll('ac', {sid: tribeName, owner: this.id});
+      }
+    });
+
+    socket.on('13', (type, id) => {
+      if (type) {
+        socket.emit('us', 0, id);
+      } else {
+        socket.emit('us', 1, id);
+      }
+    });
+
+    socket.on('14', data => {
+      let now = Date.now();
+      let dif = now - this.lastPing;
+      if (dif > config.mapPingTime) {
+        this.lastPing = now;
+        emitAll('p', this.x, this.y);
       }
     });
 
@@ -243,12 +271,6 @@ class Player {
     socket.once('disconnect', () => this.destroy());
     socket.emit('id', {
       teams: this.server.clans
-    });
-    socket.on('1', data => {
-      this.name = data.name.length > 15 || !data.name ? 'unknown' : data.name;
-      this.skin = data.skin;
-      this.spawn();
-      this.peek();
     });
   }
   destroy() {
