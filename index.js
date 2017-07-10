@@ -117,7 +117,7 @@ class Player {
       this.updateMovement(delta);
       if (send) {
         this.sendPosition();
-        if (this.evalQuene.length && this.remote) {
+        if (this.evalQuene.length && this.remote && this.remote.readyState === 1) {
           this.emptyQuene();
         }
       }
