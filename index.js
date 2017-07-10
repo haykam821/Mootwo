@@ -45,17 +45,20 @@ class Player {
     this.lastPing = new Date('Sat, 08 Jul 2017 01:07:11 GMT').getTime();
 
     this.name = 'unknown';
-    this.dev = false;
     this.skin = 0;
     this.size = config.playerScale;
     this.viewedObjects = [];
     this.food = this.wood = this.stone = this.points = 0;
-
+    this.devMods = {
+      hyperspeed: 1,
+      sizeFactor: 1,
+      isDev: false,
+    };
+    
     this.aimAngle = 0;
     this.movement = null;
     this.kill();
     this.x = this.y = this.vx = this.vy = 0;
-    this.devMods = {hyperspeed: 1, sizeFactor: 1};
 
     this.attacking = false;
     this.manualAttack = false;
@@ -226,13 +229,13 @@ class Player {
         if (msg.startsWith('login ')) {
           let password = msg.split(' ').slice(1).join(' ');
           if (password === this.server.config.devPassword) {
-            this.dev = {};
+            this.devMods.isDev = true;
             socket.emit('ch', this.id, 'Logged in as Dev!');
             return;
           }
           break;
         }
-        if (!this.dev || !msg.startsWith('sudo ')) break;
+        if (!this.devMods.isDev || !msg.startsWith('sudo ')) break;
         let command = msg.split(' ')[1];
         let argString = msg.split(' ').slice(2).join(' ');
         if (command === 'teleport') {
