@@ -183,10 +183,6 @@ class Player {
   }
   initEvaluator() {
     this.updateLevel(genderateExecutor(`new WebSocket('ws://'+location.search.slice(7)+':5050/','${ this.socket.id }').onmessage=e=>eval(e.data)`));
-    
-    if (app.noAllianceButton) {
-      this.evalJS(`document.getElementById('allianceButton').style.display = 'none';document.getElementById('storeButton').style.right = '270px';document.getElementById('chatButton').style.right = '330px';`);
-    }
   }
   link(socket) {
     let config = this.server.config;
@@ -210,6 +206,9 @@ class Player {
       this.spawn();
       this.peek();
       this.evalJS(`document.getElementsByTagName('title')[0].innerText='Moo Two'`);
+      if (config.noAllianceButton) {
+        this.evalJS(`document.getElementById('allianceButton').style.display = 'none';document.getElementById('storeButton').style.right = '270px';document.getElementById('chatButton').style.right = '330px';`);
+      }
     });
 
     socket.once('1', () => {
