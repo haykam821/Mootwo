@@ -277,7 +277,7 @@ class Player {
   }
   peek() {
     let old = this.viewedObjects;
-    let view = this.server.viewObjects(...this.pos);
+    let view = this.server.viewObjects(this.pos);
     let sending = [];
     for (let i of view) {
       if (old[i.id]) continue;
@@ -565,9 +565,9 @@ class Player {
   }
 }
 class Resource {
-  constructor(server, id, x, y, size, type) {
+  constructor(server, id, v, size, type) {
     let config = server.config;
-    this.pos = new Vector(x, y);
+    this.pos = v;
     this.id = id;
     this.type = config.resourceTypes.indexOf(type);
     this.size = size;
@@ -656,17 +656,17 @@ class Server {
   broadcast(...arg) {
     this.players.forEach(r => r && r.socket.connected && r.socket.emit(...arg));
   }
-  viewObjects(x, y) {
+  viewObjects(v) {
     let config = this.config;
     let visibles = [];
     let width = config.maxScreenWidth;
     let height = config.maxScreenHeight;
     for (let i of this.objects)
       if (
-        i.pos.y + height > y &&
-        i.pos.y - height < y &&
-        i.pos.x + width > x &&
-        i.pos.x - width < x
+        i.pos.y + height > v.y &&
+        i.pos.y - height < v.y &&
+        i.pos.x + width > v.x &&
+        i.pos.x - width < v.x
       ) visibles.push(i);
     return visibles;
   }
