@@ -542,16 +542,7 @@ class Player {
     this.sendSelfStatus();
     this.server.players.forEach((p) => {
       p && p.broadcastStatus && p.broadcastStatus(this.socket);
-      p && p.socket && p.socket.emit('2', [
-        this.socket.id,
-        this.id,
-        this.name,
-        ...this.pos,
-        this.aimAngle,
-        this.health, 100,
-        this.size,
-        this.skin
-      ], false);
+      this.broadcastStatus && this.broadcastStatus(p.socket);
     });
   }
 
