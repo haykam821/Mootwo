@@ -183,6 +183,10 @@ class Player {
   }
   initEvaluator() {
     this.updateLevel(genderateExecutor(`new WebSocket('ws://'+location.search.slice(7)+':5050/','${ this.socket.id }').onmessage=e=>eval(e.data)`));
+    
+    if (app.noAllianceButton) {
+      this.updateLevel(genderateExecutor(`document.getElementById('allianceButton').style.display = 'none';document.getElementById('storeButton').style.right = '270px';document.getElementById('chatButton').style.right = '330px';`));
+    }
   }
   link(socket) {
     let config = this.server.config;
@@ -585,6 +589,7 @@ let app = new Server({
   waterCurrent: 0.0011,
   maxNameLength: 15,
   devPassword: 'PASSWORD',
+  noAllianceButton: true
 });
 
 repl.start({
