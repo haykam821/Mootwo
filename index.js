@@ -462,8 +462,7 @@ class Player {
 class Resource {
   constructor(server, id, x, y, size, type) {
     let config = server.config;
-    this.x = x;
-    this.y = y;
+    this.pos = new Vector(x, y);
     this.id = id;
     this.type = config.resourceTypes.indexOf(type);
     this.size = size;
@@ -476,8 +475,7 @@ class Resource {
   init() {
     this.data = [
       this.id,
-      this.x,
-      this.y,
+      ...this.pos,
       this.angle,
       this.size,
       this.type,
