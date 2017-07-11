@@ -75,10 +75,7 @@ class Vector {
     return this;
   }
   moveTowards(v, amount) {
-    let dir = new Vector(v.x - this.x, v.y - this.y).limitTo(amount);
-    this.x += dir.x;
-    this.y += dir.y;
-    return this;
+    return this.add(v.clone().sub(this).limitTo(amount));
   }
   limitTo(value) {
     return this.scale(value / this.length);
@@ -102,7 +99,9 @@ class Vector {
     return this.x === v.x && this.y === v.y;
   }
   constraint(min, max) {
-    
+    this.x = this.x < min.x ? min.x : this.x > max.x ? max.x : this.x;
+    this.y = this.y < min.y ? min.y : this.y > max.y ? max.y : this.y;
+    return this;
   }
   get unitVector() {
     var length = this.length;
