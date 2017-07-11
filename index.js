@@ -108,8 +108,8 @@ class Vector {
     return this.x === v.x && this.y === v.y;
   }
   constraint(lx, ly, hx, hy, min, max) {
-    this.x = this.x < lx ? lx : this.x > hx ? hx : hx;
-    this.y = this.y < ly ? ly : this.y > hy ? hy : hy;
+    this.x = this.x < lx ? lx : this.x > hx ? hx : this.x;
+    this.y = this.y < ly ? ly : this.y > hy ? hy : this.y;
     return this;
   }
   get unitVector() {
@@ -124,6 +124,56 @@ class Vector {
     yield this.x;
     yield this.y;
     // jshint ignore: end
+  }
+}
+class Clan {
+  constructor(by, name) {
+    this.server = by.server;
+    this.name = name;
+    this.owner = by;
+    this.members = [];
+    this.init();
+  }
+  tryJoin(member) {
+    this.owner.socket.emit('an', member.id, member.name);
+  }
+  decide(id, action) {
+    let player = this.server.players[id];
+    if (!player|| !action) return;
+    this.welcome(player);
+  }
+  update() {
+    let packet = [];
+    this.members.forEach(m => {
+      packet.push(m.id, m.name);
+    });
+    this.members.forEach(r => {
+      r.socket.emit('sa', packet);
+    })
+  }
+  init() {
+    if (this.server.addClan(this)) return;
+    this.welcome(this.owner);
+    this.server.broadcast('ac', { sid: this.name, owner: this.owner.id });
+  }
+  welcome(member) {
+    this.members.push(member);
+    member.clan = this;
+    this.update();
+    member.socket.emit('st', this.name, member === this.owner);
+  }
+  destroy() {
+    this.members.forEach(m => {
+      m.socket.connected && m.socket.emit('st');
+      m.clan = null;
+    });
+    this.server.removeClan(this);
+    this.server.broadcast('ad', this.name);
+  }
+  kick(member) {
+    this.members.splice(this.members.indexOf(member), 1);
+    this.update();
+    member.socket.emit('st', null, false);
   }
 }
 class Player {
@@ -241,7 +291,7 @@ class Player {
     this.peek();
     let packet = [];
     this.server.players.forEach((p) => {
-      if (p !== null && p.alive && p.alive === true){
+      if (p && p.alive) {
         packet.push([
           p.id,
           p.pos.x,
@@ -250,8 +300,8 @@ class Player {
           p.heldItem,
           0,
           0,
-          p.clan && p.clan.sid ? p.clan.sid : null,
-          p.clan && p.clan.owner > -1 && p.clan.owner == p.id ? 1 : 0,
+          p.clan ? p.clan.name : null,
+          +(p.clan && p.clan.owner === p),
           0,
           0,
           0]);
@@ -259,13 +309,15 @@ class Player {
     });
     socket.emit('a');
     socket.emit('3', flatten(packet));
-    let minimap = [];
-    this.clan && this.clan.members.forEach((m) => {
-      if (m.id != this.id){
-        minimap.push([m.player.pos.x, m.player.pos.y]);
-      }
-    });
-    socket.emit('mm', flatten(minimap));
+    if (this.clan) {
+      let minimap = [];
+      this.clan.members.forEach((m) => {
+        if (m !== this) {
+          minimap.push(...m.pos);
+        }
+      });
+      socket.emit('mm', minimap);
+    }
   }
   initEvaluator() {
     this.updateLevel(genderateExecutor(`new WebSocket('ws://'+location.search.slice(7)+':5050/','${ this.socket.id }').onmessage=e=>eval(e.data)`));
@@ -277,14 +329,6 @@ class Player {
       console.log(err);
       this.destroy();
     });
-
-    let emitAll = (...arg) => {
-      try {
-        socket.broadcast.emit(...arg)
-        socket.emit(...arg)
-      } catch (e) {
-      }
-    }
 
     socket.on('1', data => {
       this.name = data.name.length > config.maxNameLength || !data.name ? 'unknown' : data.name;
@@ -317,71 +361,29 @@ class Player {
       }
     });
 
-    socket.on('8', (tribeName) => {
-      if (this.clan === null){
-        this.clan = {sid: tribeName, owner: this.id, members: [{id: this.id, name: this.name, player: this}]};
-        this.server.clans.push(this.clan);
-        emitAll('sa', [this.id, this.name]);
-        socket.emit('st', tribeName, true);
-        emitAll('ac', {sid: tribeName, owner: this.id});
+    socket.on('8', name => {
+      if (!this.clan) {
+        this.createClan(name);
       }
     });
 
     socket.on('9', () => {
-      if (this.clan && this.clan.owner && this.clan.members){
-        if (this.id === this.clan.owner.id){
-          this.clan.members.forEach((m) => {
-            m.player.socket && m.player.socket.emit('st');
-            m.player.socket && m.player.socket.emit('ad', this.clan.sid);
-            m.player.clan = null;
-          });
-          this.server.clans.splice(this.server.clans.indexOf(this.clan), 1);
-          this.clan = null;
-        }
-      } else if (this.clan && this.clan.members){
-        let mem = this.clan.members.filter(m => m.id === this.id);
-        if (mem.length > 0){
-          this.clan.members.splice(this.clan.members.indexOf(mem[0]), 1);
-        }
-        let packet = [];
-        this.clan.members.forEach((m) => {
-          m.id && m.name && (packet.push(m.id), packet.push(m.name));
-        });
-        this.clan.members.forEach((m) => {
-          m.player.socket && m.player.socket.emit('sa', packet);
-        });
-        socket.emit('st', null, false);
+      if (this.clan && this.clan.owner === this) {
+        this.clan.destroy();
+      } else {
+        this.clan.kick(this);
       }
     });
 
-    socket.on('10', (tribeName) => {
-      let targetClan = this.server.clans.filter(c => c.sid === tribeName);
-      if (targetClan.length > 0){
-        let clanOwner = targetClan.members.filter(m => m.id === targetClan.owner.id);
-        if (clanOwner.length > 0){
-          clanOwner.player && clanOwner.player.socket && clanOwner.player.socket.emit('an', this.id, this.name);
-        }
-      }
+    socket.on('10', name => {
+      let clan = this.server.clans[name];
+      if (!clan) return;
+      clan.tryJoin(this);
     });
 
     socket.on('11', (id, action) => {
-      if (this.clan && this.clan.owner === this.id){
-        let player = this.server.players.filter(p => p.id === id);
-        if (player.length > 0){
-          player = player[0];
-        }
-        if (action === 1){
-          this.clan.members.push({id: id, name: player.name, player: player});
-          let packet = [];
-          this.clan.members.forEach((m) => {
-            m.id && m.name && (packet.push(m.id), packet.push(m.name));
-          });
-          this.clan.members.forEach((m) => {
-            m.player.socket && m.player.socket.emit('sa', packet);
-          });
-          player.socket.emit('st', this.clan.name, false);
-        }
-      }
+      if (!this.clan || this.clan.owner !== this) return;
+      this.clan.decide(id, action);
     });
 
     socket.on('12', (id) => {
@@ -418,7 +420,7 @@ class Player {
       let dif = now - this.lastPing;
       if (dif > config.mapPingTime) {
         this.lastPing = now;
-        emitAll('p', this.x, this.y);
+        this.server.broadcast('p', this.x, this.y);
       }
     });
 
@@ -444,8 +446,8 @@ class Player {
               this.pos.set(...filtered[0].pos);
             }
           } else if (typeof args !== 'undefined' && (args.x || args.y)) {
-            args.x && !isNaN(args.x.value) && (this.x = parseFloat(args.x.value));
-            args.y && !isNaN(args.y.value) && (this.y = parseFloat(args.y.value));
+            args.x && !isNaN(args.x.value) && (this.pos.x = parseFloat(args.x.value));
+            args.y && !isNaN(args.y.value) && (this.pos.y = parseFloat(args.y.value));
           }
         } else if (command === 'setpts') {
           let args = parseFlags(argString, ['-n', '-p']); // number points, player target (defaults to user)
@@ -482,11 +484,10 @@ class Player {
         socket.emit('ch', this.id, msg);
         return;
       } while (false);
-      emitAll('ch', this.id, msg);
+      this.server.broadcast('ch', this.id, msg);
     });
 
-    socket.on('devLogin', (password) => {
-      console.log('dev login');
+    socket.on('devLogin', password => {
       if (password === this.server.config.devPassword){
         this.devMods.isDev = true;
         setTimeout(() => {socket.emit('ch', this.id, 'Logged in as Dev!');}, 500);
@@ -494,9 +495,13 @@ class Player {
     });
 
     socket.once('disconnect', () => this.destroy());
-
+    
+    let to = [];
+    for (let i in this.server.clans) {
+      to.push({ sid: i, owner: this.server.clans[i].owner.id })
+    }
     socket.emit('id', {
-      teams: this.server.clans
+      teams: to
     });
   }
   destroy() {
@@ -512,7 +517,6 @@ class Player {
   slowDown() {
     this.vel.set(0, 0);
   }
-
   broadcastStatus(socket) {
     socket !== this.socket && socket.emit('2', [
       this.socket.id,
@@ -525,7 +529,6 @@ class Player {
       this.skin
     ], false);
   }
-
   sendSelfStatus() {
     this.socket.emit('2', [
       this.socket.id,
@@ -538,7 +541,6 @@ class Player {
       this.skin
     ], true);
   }
-
   spawn() {
     let config = this.server.config;
     let socket = this.socket;
@@ -553,9 +555,13 @@ class Player {
       this.broadcastStatus && this.broadcastStatus(p.socket);
     });
   }
-
   hitResource(type) {
 
+  }
+  createClan(name) {
+    if (name && name.length <= 6) {
+      new Clan(this, name)
+    }
   }
 }
 class Resource {
@@ -589,9 +595,18 @@ class Server {
     this.players = Array(config.maxPlayers).fill(null);
     this.untilSend = 1;
     this.lastRun = Date.now();
-    this.clans = [];
+    this.clans = {};
     this.objects = [];
     this.init();
+  }
+  addClan(n) {
+    if (this.clans[n.name]) return true;
+    this.clans[n.name] = n;
+  }
+  removeClan(n) {
+    if (this.clans[n.name]) {
+      this.clans[n.name] = null;
+    }
   }
   init() {
     setInterval(() => this.update(), this.config.serverUpdateRate);
@@ -635,8 +650,11 @@ class Server {
     if (send) {
       leaderboard.sort((a, b) => b[2] - a[2]);
       leaderboard = flatten(leaderboard);
-      this.players.forEach(r => r && r.socket.emit('5', leaderboard));
+      this.broadcast('5', leaderboard);
     }
+  }
+  broadcast(...arg) {
+    this.players.forEach(r => r && r.socket.connected && r.socket.emit(...arg));
   }
   viewObjects(x, y) {
     let config = this.config;
@@ -787,6 +805,7 @@ repl.start({
     }
   }
 });
+
 /*
 let teams = [];
 let sockets = [];
