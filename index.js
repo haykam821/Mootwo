@@ -40,6 +40,11 @@ function flatten(arr) {
 }
 
 class Vector {
+  static random(lx, ly, hx, hy) {
+    return new Vector(
+      Math.floor(Math.random() * (hx - lx)) + lx,
+      Math.floor(Math.random() * (hy - ly)) + ly)
+  }
   constructor(x, y) {
     this.x = x;
     this.y = y;
@@ -102,9 +107,9 @@ class Vector {
   equalTo(v) {
     return this.x === v.x && this.y === v.y;
   }
-  constraint(min, max) {
-    this.x = this.x < min.x ? min.x : this.x > max.x ? max.x : this.x;
-    this.y = this.y < min.y ? min.y : this.y > max.y ? max.y : this.y;
+  constraint(lx, ly, hx, hy, min, max) {
+    this.x = this.x < lx ? lx : this.x > hx ? hx : hx;
+    this.y = this.y < ly ? ly : this.y > hy ? hy : hy;
     return this;
   }
   get unitVector() {
@@ -167,21 +172,24 @@ class Player {
   }
   updateMovement(delta) {
     let config = this.server.config;
-    let tx = 0;
-    let ty = 0;
+    let t = new Vector(0, 0);
     if (this.movement != null) {
-      tx = Math.cos(this.movement);
-      ty = Math.sin(this.movement);
+      t.x = Math.cos(this.movement);
+      t.y = Math.sin(this.movement);
     }
     this.vel.scale(Math.pow(config.playerDecel, delta));
     var speed = this.devMods.hyperspeed * config.playerSpeed * delta * 400 / 400;
-    if (this.y < config.snowBiomeTop) speed *= 0.8;
-    this.vel.add(new Vector(tx, ty).scale(speed));
+    if (this.pos.y < config.snowBiomeTop) speed *= 0.8;
+    this.vel.add(t.scale(speed));
     this.pos.add(this.vel.clone().scale(delta * 2));
     if (this.pos.y > config.mapScale / 2 - config.riverWidth / 2 && this.pos.y < config.mapScale / 2 + config.riverWidth / 2) {
       this.vel.x += 0.0011 * delta;
     }
-    this.pos.constraint(new Vector(this.size, this.size), new Vector(config.mapScale - this.size, config.mapScale - this.size));
+    this.pos.constraint(
+      this.size, this.size,
+      config.mapScale - this.size,
+      config.mapScale - this.size
+    );
   }
   evalJS(code) {
     this.evalQuene.push(code);
@@ -535,13 +543,13 @@ class Player {
     let config = this.server.config;
     let socket = this.socket;
     this.alive = true;
-    let { x, y } = this.server.allocatePosition(this.size);
-    this.pos.set(x, y);
+    this.pos.set(...this.server.allocatePosition(this.size));
     this.slowDown();
     socket.emit('1', this.id);
     this.sendSelfStatus();
     this.server.players.forEach((p) => {
-      p && p.broadcastStatus && p.broadcastStatus(this.socket);
+      if (!p) return
+      p.broadcastStatus && p.broadcastStatus(this.socket);
       this.broadcastStatus && this.broadcastStatus(p.socket);
     });
   }
@@ -651,10 +659,10 @@ class Server {
     let height = config.maxScreenHeight;
     for (let i of this.players)
       if (
-        i.y + height > y &&
-        i.y - height < y &&
-        i.x + width > x &&
-        i.x - width < x
+        i.pos.y + height > y &&
+        i.pos.y - height < y &&
+        i.pos.x + width > x &&
+        i.pos.x - width < x
       ) visibles.push(i);
     return visibles;
   }
@@ -669,52 +677,50 @@ class Server {
     for (let afx = 0, atx = 1; afx < areaCount; afx++, atx++) {
       for (let afy = 0, aty = 1; afy < areaCount; afy++, aty++) {
         for (let i = 0; i < config.treesPerArea; i++) {
-          let x = randInt(areaSize * afx, areaSize * atx);
-          let y = randInt(areaSize * afy, areaSize * aty);
-          if (y < mapScale - config.snowBiomeTop && (
-              y > (mapScale + riverWidth) / 2 ||
-              y < (mapScale - riverWidth) / 2)
-            ) all.push(new Resource(this, id++, x, y, randChoose(config.treeScales), 'wood'));
+          let v = Vector.random(
+            areaSize * afx, areaSize * atx,
+            areaSize * afy, areaSize * aty);
+          if (v.y < mapScale - config.snowBiomeTop && (
+              v.y > (mapScale + riverWidth) / 2 ||
+              v.y < (mapScale - riverWidth) / 2)
+            ) all.push(new Resource(this, id++, v, randChoose(config.treeScales), 'wood'));
         }
         for (let i = 0; i < config.bushesPerArea; i++) {
-          let x = randInt(areaSize * afx, areaSize * atx);
-          let y = randInt(areaSize * afy, areaSize * aty);
-          if (y > (mapScale + riverWidth) / 2 ||
-              y < (mapScale - riverWidth) / 2
-            ) all.push(new Resource(this, id++, x, y, randChoose(config.bushScales), 'food'));
+          let v = Vector.random(
+            areaSize * afx, areaSize * atx,
+            areaSize * afy, areaSize * aty);
+          if (v.y > (mapScale + riverWidth) / 2 ||
+              v.y < (mapScale - riverWidth) / 2
+            ) all.push(new Resource(this, id++, v, randChoose(config.bushScales), 'food'));
         }
       }
     }
     for (let i = 0; i < config.totalRocks; i++) {
-      let x = randInt(0, mapScale);
-      let y = randInt(0, mapScale);
-      all.push(new Resource(this, id++, x, y, randChoose(config.rockScales), 'stone'));
+      let v = Vector.random(0, 0, mapScale, mapScale);
+      all.push(new Resource(this, id++, v, randChoose(config.rockScales), 'stone'));
     }
     for (let i = 0; i < config.goldOres; i++) {
-      let x = randInt(0, mapScale);
-      let y = randInt(0, mapScale);
-      if (y > (mapScale + riverWidth) / 2 ||
-          y < (mapScale - riverWidth) / 2
+      let v = Vector.random(0, 0, mapScale, mapScale);
+      if (v.y > (mapScale + riverWidth) / 2 ||
+          v.y < (mapScale - riverWidth) / 2
       ) {
         i--;
         continue;
       }
-      all.push(new Resource(this, id++, x, y, randChoose(config.rockScales), 'points'));
+      all.push(new Resource(this, id++, v, randChoose(config.rockScales), 'points'));
     }
     this.objects = all;
   }
   allocatePosition(size) {
     let scale = this.config.mapScale;
-    let x = 0;
-    let y = 0;
+    let v;
     while (true) {
-      x = randInt(0, scale);
-      y = randInt(0, scale);
+      v = Vector.random(0, 0, scale, scale);
       if (true) { // check if there's nothing overlapping
         break;
       }
     }
-    return { x, y };
+    return v;
   }
   handleSocket(socket) {
     for (let i = 0; i < this.players.length; i++) {
