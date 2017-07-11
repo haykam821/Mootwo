@@ -318,6 +318,43 @@ class Player {
       }
     });
 
+    socket.on('9', () => {
+      if (this.clan && this.clan.owner){
+        if (this.id === this.clan.owner.id){
+          this.clan.members.forEach((m) => {
+            m.player.socket && m.player.socket.emit('st');
+            m.player.socket && m.player.socket.emit('ad', this.clan.sid);
+            m.player.clan = null;
+          });
+          this.server.clans.splice(this.server.clans.indexOf(this.clan), 1);
+          this.clan = null;
+        }
+      } else {
+        let mem = this.clan.members.filter(m => m.id === this.id);
+        if (mem.length > 0){
+          this.clan.members.splice(this.clan.members.indexOf(mem[0]), 1);
+        }
+        let packet = [];
+        this.clan.members.forEach((m) => {
+          m.id && m.name && (packet.push(m.id), packet.push(m.name));
+        });
+        this.clan.members.forEach((m) => {
+          m.player.socket && m.player.socket.emit('sa', packet);
+        });
+        socket.emit('st', null, false);
+      }
+    });
+
+    socket.on('10', (tribeName) => {
+      let targetClan = this.server.clans.filter(c => c.sid === tribeName);
+      if (targetClan.length > 0){
+        let clanOwner = targetClan.members.filter(m => m.id === targetClan.owner.id);
+        if (clanOwner.length > 0){
+          clanOwner.player && clanOwner.player.socket && clanOwner.player.socket.emit('an', this.id, this.name);
+        }
+      }
+    });
+
     socket.on('13', (type, id) => {
       if (type) {
         socket.emit('us', 0, id);
