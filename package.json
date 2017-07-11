@@ -12,6 +12,9 @@
   "engines": {
     "node": ">= 7.x.x"
   },
+  "scripts": {
+    "start": "node index"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/haykam821/Mootwo.git"
