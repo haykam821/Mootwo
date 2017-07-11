@@ -149,9 +149,9 @@ class Player {
 
     this.aimAngle = 0;
     this.movement = null;
-    this.kill();
     this.pos = new Vector(0, 0);
     this.vel = new Vector(0, 0);
+    this.kill();
 
     this.manualAttack = false;
     this.autoAttack = false;
@@ -218,7 +218,7 @@ class Player {
   }
   peek() {
     let old = this.viewedObjects;
-    let view = this.server.viewObjects(this.pos.x, this.pos.y);
+    let view = this.server.viewObjects(...this.pos);
     let sending = [];
     for (let i of view) {
       if (old[i.id]) continue;
@@ -354,8 +354,7 @@ class Player {
           if (typeof args !== 'undefined' && args.p) {
             let filtered = this.server.players.filter(p => p && p.name === args.p.value);
             if (filtered.length > 0) {
-              this.pos.x = filtered[0].x;
-              this.pos.y = filtered[0].y;
+              this.pos.set(...filtered[0].pos);
             }
           } else if (typeof args !== 'undefined' && (args.x || args.y)) {
             args.x && !isNaN(args.x.value) && (this.x = parseFloat(args.x.value));
