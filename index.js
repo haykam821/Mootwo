@@ -335,7 +335,8 @@ class Player {
       this.skin = data.skin;
       this.spawn();
       this.peek();
-      this.evalJS(`document.getElementsByTagName('title')[0].innerText='Moo Two'`);
+      this.evalJS(`document.getElementsByTagName('title')[0].innerText='Moo Two';`);
+      this.evalJS(`for(var r of document.getElementsByTagName('link'))if(r.href.match(/favicon/))r.href="/img/resources/wood_ico.png"`);
       if (config.noAllianceButton) {
         this.evalJS(`document.getElementById('allianceButton').style.display = 'none';document.getElementById('storeButton').style.right = '270px';document.getElementById('chatButton').style.right = '330px';`);
       }
