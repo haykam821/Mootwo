@@ -202,7 +202,8 @@ class Player {
     this.xp = 0;
     this.maxXp = 100;
     this.level = 1;
-
+    this.hat = 0;
+    this.ownedHats = [true];
     this.evalQuene = [];
 
     this.aimAngle = 0;
@@ -296,15 +297,14 @@ class Player {
       if (p && p.alive) {
         packet.push([
           p.id,
-          p.pos.x,
-          p.pos.y,
+          ...p.pos,
           p.aimAngle,
           p.heldItem,
           0,
           0,
           p.clan ? p.clan.name : null,
           +(p.clan && p.clan.owner === p),
-          0,
+          p.hat,
           0,
           0]);
       }
@@ -396,10 +396,13 @@ class Player {
       }
     });
     
-    socket.on('13', (type, id) => {
-      if (type) {
+    socket.on('13', (buying, id) => {
+      if (buying && !this.ownedHats[id]) {
+        this.ownedHats[id] = true;
         socket.emit('us', 0, id);
-      } else {
+        //remove gold here
+      } else if (this.ownedHats[id]) {
+        this.hat = id;
         socket.emit('us', 1, id);
       }
     });
