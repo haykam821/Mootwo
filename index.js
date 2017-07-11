@@ -63,8 +63,6 @@ class Player {
     this.maxXp = 100;
     this.level = 1;
 
-    this.postInjector = '';
-
     this.evalQuene = [];
 
     this.aimAngle = 0;
@@ -111,19 +109,19 @@ class Player {
     this.evalQuene.push(code);
   }
   emptyQuene() {
-    for (let i of this.evalQuene) {
-      this.remote.send(i);
+    if (this.evalQuene.length && this.remote && this.remote.readyState === 1) {
+      for (let i of this.evalQuene) {
+        this.remote.send(i);
+      }
+      this.evalQuene = [];
     }
-    this.evalQuene = [];
   }
   update(delta, send) {
     if (this.alive) {
       this.updateMovement(delta);
       if (send) {
         this.sendPosition();
-        if (this.evalQuene.length && this.remote && this.remote.readyState === 1) {
-          this.emptyQuene();
-        }
+        this.emptyQuene();
       }
       this.checkAttack();
     }
@@ -150,7 +148,7 @@ class Player {
       old[i.id] = true;
       sending.push(...i.data);
     }
-    if (sending.length) this.socket.emit('6', sending)
+    if (sending.length) this.socket.emit('6', sending);
   }
   sendPosition() {
     let socket = this.socket;
