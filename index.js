@@ -157,6 +157,7 @@ class Clan {
     this.server.broadcast('ac', { sid: this.name, owner: this.owner.id });
   }
   welcome(member) {
+    if (this.members.indexOf(member) !== -1) return;
     this.members.push(member);
     member.clan = this;
     this.update();
@@ -173,7 +174,8 @@ class Clan {
   kick(member) {
     this.members.splice(this.members.indexOf(member), 1);
     this.update();
-    member.socket.emit('st', null, false);
+    member.socket.emit('st');
+    member.clan = null;
   }
 }
 class Player {
@@ -387,27 +389,13 @@ class Player {
       this.clan.decide(id, action);
     });
 
-    socket.on('12', (id) => {
-      if (this.clan && this.clan.owner === this.id){
-        let player = this.server.players.filter(p => p.id === id);
-        if (player.length > 0){
-          player = player[0];
-        }
-        let mem = this.clan.members.filter(m => m.id === player.id);
-        if (mem.length > 0){
-          this.clan.members.splice(this.clan.members.indexOf(mem[0]), 1);
-        }
-        let packet = [];
-        this.clan.members.forEach((m) => {
-          m.id && m.name && (packet.push(m.id), packet.push(m.name));
-        });
-        this.clan.members.forEach((m) => {
-          m.player.socket && m.player.socket.emit('sa', packet);
-        });
-        player.socket.emit('st', null, false);
+    socket.on('12', id => {
+      let baddy = this.clan.members.filter(p => p.id === id)[0];
+      if (baddy && this.clan && this.clan.owner === this) {
+        this.clan.kick(baddy);
       }
     });
-
+    
     socket.on('13', (type, id) => {
       if (type) {
         socket.emit('us', 0, id);
