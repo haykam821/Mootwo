@@ -134,6 +134,7 @@ class Player {
     this.size = config.playerScale;
     this.viewedObjects = [];
     this.food = this.wood = this.stone = this.points = this.kills = 0;
+    this.health = 100;
     this.heldItem = -1;
     this.devMods = {
       hyperspeed: 1,
@@ -355,7 +356,7 @@ class Player {
       }
     });
 
-    socket.on('11', (id, action)){
+    socket.on('11', (id, action) => {
       if (this.clan && this.clan.owner === this.id){
         let player = this.server.players.filter(p => p.id === id);
         if (player.length > 0){
@@ -373,7 +374,7 @@ class Player {
           player.socket.emit('st', this.clan.name, false);
         }
       }
-    }
+    });
 
     socket.on('12', (id) => {
       if (this.clan && this.clan.owner === this.id){
@@ -503,6 +504,33 @@ class Player {
   slowDown() {
     this.vel.set(0, 0);
   }
+
+  broadcastStatus(socket) {
+    socket !== this.socket && socket.emit('2', [
+      this.socket.id,
+      this.id,
+      this.name,
+      ...this.pos,
+      this.aimAngle,
+      this.health, 100,
+      this.size,
+      this.skin
+    ], false);
+  }
+
+  sendSelfStatus() {
+    this.socket.emit('2', [
+      this.socket.id,
+      this.id,
+      this.name,
+      ...this.pos,
+      this.aimAngle,
+      this.health, 100,
+      this.size,
+      this.skin
+    ], true);
+  }
+
   spawn() {
     let config = this.server.config;
     let socket = this.socket;
@@ -512,29 +540,21 @@ class Player {
     this.slowDown();
     socket.emit('1', this.id);
     this.sendSelfStatus();
+    this.server.players.forEach((p) => {
+      p && p.broadcastStatus && p.broadcastStatus(this.socket);
+      p && p.socket && p.socket.emit('2', [
+        this.socket.id,
+        this.id,
+        this.name,
+        ...this.pos,
+        this.aimAngle,
+        this.health, 100,
+        this.size,
+        this.skin
+      ], false);
+    });
   }
-  sendSelfStatus() {
-    this.socket.emit('2', [
-      this.socket.id,
-      this.id,
-      this.name,
-      ...this.pos,
-      this.aimAngle,
-      100, 100,
-      this.size,
-      this.skin
-    ], true);
-    this.socket.broadcast.emit('2', [
-      this.socket.id,
-      this.id,
-      this.name,
-      ...this.pos,
-      this.aimAngle,
-      100, 100,
-      this.size,
-      this.skin
-    ], false);
-  }
+
   hitResource(type) {
 
   }
