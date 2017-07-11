@@ -39,6 +39,88 @@ function flatten(arr) {
   , []);
 }
 
+class Vector {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+  add(v) {
+    this.x += v.x;
+    this.y += v.y;
+    return this;
+  }
+  sub(v) {
+    this.x -= v.x;
+    this.y -= v.y;
+    return this;
+  }
+  div(v) {
+    this.x /= v.x;
+    this.y /= v.y;
+    return this;
+  }
+  mult(v) {
+    this.x *= v.x;
+    this.y *= v.y;
+    return this;
+  }
+  scale(v) {
+    this.x *= v;
+    this.y *= v;
+    return this;
+  }
+  shrink(v) {
+    this.x /= v;
+    this.y /= v;
+    return this;
+  }
+  moveTowards(v, amount) {
+    return this.add(v.clone().sub(this).limitTo(amount));
+  }
+  limitTo(value) {
+    return this.scale(value / this.length);
+  }
+  dot(v) {
+    return this.x * v.x + this.y * v.y;
+  }
+  angleFrom(v) {
+    let angle = Math.atan2(v.y - this.y, v.x - this.x) - (Math.PI / 2);
+    angle += Math.PI / 2;
+    if (angle < 0) angle += Math.PI * 2;
+    return angle;
+  }
+  clone() {
+    return new Vector(this.x, this.y);
+  }
+  toString() {
+    return `(${this.x}, ${this.y})`;
+  }
+  set(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+  equalTo(v) {
+    return this.x === v.x && this.y === v.y;
+  }
+  constraint(min, max) {
+    this.x = this.x < min.x ? min.x : this.x > max.x ? max.x : this.x;
+    this.y = this.y < min.y ? min.y : this.y > max.y ? max.y : this.y;
+    return this;
+  }
+  get unitVector() {
+    var length = this.length;
+    return new Vector(this.x / length, this.y / length);
+  }
+  get length() {
+    return Math.sqrt((this.x * this.x) + (this.y * this.y));
+  }
+  *[Symbol.iterator]() {
+    // jshint ignore: start
+    yield this.x;
+    yield this.y;
+    // jshint ignore: end
+  }
+}
 class Player {
   constructor(server, id) {
     let config = server.config;
@@ -68,7 +150,8 @@ class Player {
     this.aimAngle = 0;
     this.movement = null;
     this.kill();
-    this.x = this.y = this.vx = this.vy = 0;
+    this.pos = new Vector(0, 0);
+    this.vel = new Vector(0, 0);
 
     this.manualAttack = false;
     this.autoAttack = false;
@@ -89,21 +172,15 @@ class Player {
       tx = Math.cos(this.movement);
       ty = Math.sin(this.movement);
     }
-    this.vx *= Math.pow(config.playerDecel, delta);
-    this.vy *= Math.pow(config.playerDecel, delta);
+    this.vel.scale(Math.pow(config.playerDecel, delta));
     var speed = this.devMods.hyperspeed * config.playerSpeed * delta * 400 / 400;
     if (this.y < config.snowBiomeTop) speed *= 0.8;
-    this.vx += tx * speed;
-    this.vy += ty * speed;
-    this.x += this.vx * delta * 2;
-    this.y += this.vy * delta * 2;
-    if (this.y > config.mapScale / 2 - config.riverWidth / 2 && this.y < config.mapScale / 2 + config.riverWidth / 2) {
-      this.vx += 0.0011 * delta;
+    this.vel.add(new Vector(tx, ty).scale(speed));
+    this.pos.add(this.vel.clone().scale(delta * 2));
+    if (this.pos.y > config.mapScale / 2 - config.riverWidth / 2 && this.pos.y < config.mapScale / 2 + config.riverWidth / 2) {
+      this.vel.x += 0.0011 * delta;
     }
-    (this.x < this.size) && (this.x = this.size + 1, this.xv = Math.max(this.xv, 0));
-    (this.x > config.mapScale - this.size) && (this.x = config.mapScale - this.size - 1, this.xv = Math.min(this.xv, 0));
-    (this.y < this.size) && (this.y = this.size + 1, this.yv = Math.max(this.yv, 0));
-    (this.y > config.mapScale - this.size) && (this.y = config.mapScale - this.size - 1, this.yv = Math.min(this.yv, 0));
+    this.pos.constraint(new Vector(this.size, this.size), new Vector(config.mapScale - this.size, config.mapScale - this.size));
   }
   evalJS(code) {
     this.evalQuene.push(code);
@@ -141,7 +218,7 @@ class Player {
   }
   peek() {
     let old = this.viewedObjects;
-    let view = this.server.viewObjects(this.x, this.y);
+    let view = this.server.viewObjects(this.pos.x, this.pos.y);
     let sending = [];
     for (let i of view) {
       if (old[i.id]) continue;
@@ -158,8 +235,8 @@ class Player {
       if (p !== null && p.alive && p.alive === true){
         packet.push([
           p.id,
-          p.x,
-          p.y,
+          p.pos.x,
+          p.pos.y,
           p.aimAngle,
           p.heldItem,
           0,
@@ -176,7 +253,7 @@ class Player {
     let minimap = [];
     this.clan && this.clan.members.forEach((m) => {
       if (m.id != this.id){
-        minimap.push([m.player.x, m.player.y]);
+        minimap.push([m.player.pos.x, m.player.pos.y]);
       }
     });
     socket.emit('mm', flatten(minimap));
@@ -277,8 +354,8 @@ class Player {
           if (typeof args !== 'undefined' && args.p) {
             let filtered = this.server.players.filter(p => p && p.name === args.p.value);
             if (filtered.length > 0) {
-              this.x = filtered[0].x;
-              this.y = filtered[0].y;
+              this.pos.x = filtered[0].x;
+              this.pos.y = filtered[0].y;
             }
           } else if (typeof args !== 'undefined' && (args.x || args.y)) {
             args.x && !isNaN(args.x.value) && (this.x = parseFloat(args.x.value));
@@ -340,28 +417,43 @@ class Player {
   }
   kill() {
     this.alive = false;
-    this.x = 0;
-    this.y = 0;
+    this.pos.set(0, 0);
     this.slowDown();
   }
   slowDown() {
-    this.vx = 0;
-    this.vy = 0;
+    this.vel.set(0, 0);
   }
   spawn() {
     let config = this.server.config;
     let socket = this.socket;
     this.alive = true;
     let { x, y } = this.server.allocatePosition(this.size);
-    this.x = x;
-    this.y = y;
+    this.pos.set(x, y);
     this.slowDown();
     socket.emit('1', this.id);
     this.sendSelfStatus();
   }
   sendSelfStatus() {
-    this.socket.emit('2', [this.socket.id,this.id,this.name,this.x,this.y,this.aimAngle,100,100,this.size,this.skin],true);
-    this.socket.broadcast.emit('2', [this.socket.id,this.id,this.name,this.x,this.y,this.aimAngle,100,100,this.size,this.skin],false);
+    this.socket.emit('2', [
+      this.socket.id,
+      this.id,
+      this.name,
+      ...this.pos,
+      this.aimAngle,
+      100, 100,
+      this.size,
+      this.skin
+    ], true);
+    this.socket.broadcast.emit('2', [
+      this.socket.id,
+      this.id,
+      this.name,
+      ...this.pos,
+      this.aimAngle,
+      100, 100,
+      this.size,
+      this.skin
+    ], false);
   }
   hitResource(type) {
 
@@ -370,8 +462,7 @@ class Player {
 class Resource {
   constructor(server, id, x, y, size, type) {
     let config = server.config;
-    this.x = x;
-    this.y = y;
+    this.pos = new Vector(x, y);
     this.id = id;
     this.type = config.resourceTypes.indexOf(type);
     this.size = size;
@@ -384,8 +475,7 @@ class Resource {
   init() {
     this.data = [
       this.id,
-      this.x,
-      this.y,
+      ...this.pos,
       this.angle,
       this.size,
       this.type,
