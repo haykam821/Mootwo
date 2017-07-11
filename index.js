@@ -295,22 +295,20 @@ class Player {
     let packet = [];
     this.server.players.forEach((p) => {
       if (p && p.alive) {
-        packet.push([
+        packet.push(
           p.id,
           ...p.pos,
           p.aimAngle,
           p.heldItem,
-          0,
-          0,
+          0, 0,
           p.clan ? p.clan.name : null,
           +(p.clan && p.clan.owner === p),
           p.hat,
-          0,
-          0]);
+          0, 0);
       }
     });
     socket.emit('a');
-    socket.emit('3', flatten(packet));
+    socket.emit('3', packet);
     if (this.clan) {
       let minimap = [];
       this.clan.members.forEach((m) => {
@@ -631,18 +629,17 @@ class Server {
     let now = Date.now();
     let delta = now - this.lastRun;
     this.lastRun = now;
-    let leaderboard = [];
-    for (let i of this.players) {
-      if (i == null) continue;
-      i.update(delta, send);
-      if (send && i.alive === true && i.name !== null){
-        leaderboard.push([i.id, i.name, i.points]);
-      }
-    }
     if (send) {
-      leaderboard.sort((a, b) => b[2] - a[2]);
-      leaderboard = flatten(leaderboard);
-      this.broadcast('5', leaderboard);
+      let leaderboard = [];
+      for (let i of this.players) {
+        if (i == null) continue;
+        i.update(delta, send);
+        if (send && i.alive === true && i.name !== null){
+          leaderboard.push([i.id, i.name, i.points]);
+        }
+      }
+      leaderboard = flatten(leaderboard.sort((a, b) => b[2] - a[2]))
+      this.players.forEach(r => r && r.alive && r.socket.emit('5', leaderboard));
     }
   }
   broadcast(...arg) {
