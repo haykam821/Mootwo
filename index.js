@@ -114,6 +114,12 @@ class Vector {
   get length() {
     return Math.sqrt((this.x * this.x) + (this.y * this.y));
   }
+  *[Symbol.iterator]() {
+    // jshint ignore: start
+    yield this.x;
+    yield this.y;
+    // jshint ignore: end
+  }
 }
 class Player {
   constructor(server, id) {
@@ -411,13 +417,11 @@ class Player {
   }
   kill() {
     this.alive = false;
-    this.x = 0;
-    this.y = 0;
+    this.pos.set(0, 0);
     this.slowDown();
   }
   slowDown() {
-    this.vx = 0;
-    this.vy = 0;
+    this.vel.set(0, 0);
   }
   spawn() {
     let config = this.server.config;
@@ -430,8 +434,26 @@ class Player {
     this.sendSelfStatus();
   }
   sendSelfStatus() {
-    this.socket.emit('2', [this.socket.id,this.id,this.name,this.pos.x,this.pos.y,this.aimAngle,100,100,this.size,this.skin],true);
-    this.socket.broadcast.emit('2', [this.socket.id,this.id,this.name,this.pos.x,this.pos.y,this.aimAngle,100,100,this.size,this.skin],false);
+    this.socket.emit('2', [
+      this.socket.id,
+      this.id,
+      this.name,
+      ...this.pos,
+      this.aimAngle,
+      100, 100,
+      this.size,
+      this.skin
+    ], true);
+    this.socket.broadcast.emit('2', [
+      this.socket.id,
+      this.id,
+      this.name,
+      ...this.pos,
+      this.aimAngle,
+      100, 100,
+      this.size,
+      this.skin
+    ], false);
   }
   hitResource(type) {
 
