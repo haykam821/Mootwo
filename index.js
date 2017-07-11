@@ -319,7 +319,7 @@ class Player {
     });
 
     socket.on('9', () => {
-      if (this.clan && this.clan.owner){
+      if (this.clan && this.clan.owner && this.clan.members){
         if (this.id === this.clan.owner.id){
           this.clan.members.forEach((m) => {
             m.player.socket && m.player.socket.emit('st');
@@ -329,7 +329,7 @@ class Player {
           this.server.clans.splice(this.server.clans.indexOf(this.clan), 1);
           this.clan = null;
         }
-      } else {
+      } else if (this.clan && this.clan.members){
         let mem = this.clan.members.filter(m => m.id === this.id);
         if (mem.length > 0){
           this.clan.members.splice(this.clan.members.indexOf(mem[0]), 1);
@@ -354,6 +354,26 @@ class Player {
         }
       }
     });
+
+    socket.on('11', (id, action)){
+      if (this.clan && this.clan.owner === this.id){
+        let player = this.server.players.filter(p => p.id === id);
+        if (player.length > 0){
+          player = player[0];
+        }
+        if (action === 1){
+          this.clan.members.push({id: id, name: player.name, player: player});
+          let packet = [];
+          this.clan.members.forEach((m) => {
+            m.id && m.name && (packet.push(m.id), packet.push(m.name));
+          });
+          this.clan.members.forEach((m) => {
+            m.player.socket && m.player.socket.emit('sa', packet);
+          });
+          player.socket.emit('st', this.clan.name, false);
+        }
+      }
+    }
 
     socket.on('13', (type, id) => {
       if (type) {
@@ -434,6 +454,7 @@ class Player {
       } while (false);
       emitAll('ch', this.id, msg);
     });
+
     socket.on('devLogin', (password) => {
       console.log('dev login');
       if (password === this.server.config.devPassword){
@@ -441,7 +462,9 @@ class Player {
         setTimeout(() => {socket.emit('ch', this.id, 'Logged in as Dev!');}, 500);
       }
     });
+
     socket.once('disconnect', () => this.destroy());
+
     socket.emit('id', {
       teams: this.server.clans
     });
