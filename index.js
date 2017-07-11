@@ -276,7 +276,7 @@ class Player {
     }
   }
   attack() {
-    this.socket.emit('7', this.id, 0, 0);
+    this.server.broadcast('7', this.id, 0, 0);
   }
   peek() {
     let old = this.viewedObjects;
