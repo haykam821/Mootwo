@@ -545,10 +545,10 @@ class Server {
     let height = config.maxScreenHeight;
     for (let i of this.objects)
       if (
-        i.y + height > y &&
-        i.y - height < y &&
-        i.x + width > x &&
-        i.x - width < x
+        i.pos.y + height > y &&
+        i.pos.y - height < y &&
+        i.pos.x + width > x &&
+        i.pos.x - width < x
       ) visibles.push(i);
     return visibles;
   }
