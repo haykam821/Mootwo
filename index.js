@@ -375,6 +375,27 @@ class Player {
       }
     }
 
+    socket.on('12', (id) => {
+      if (this.clan && this.clan.owner === this.id){
+        let player = this.server.players.filter(p => p.id === id);
+        if (player.length > 0){
+          player = player[0];
+        }
+        let mem = this.clan.members.filter(m => m.id === player.id);
+        if (mem.length > 0){
+          this.clan.members.splice(this.clan.members.indexOf(mem[0]), 1);
+        }
+        let packet = [];
+        this.clan.members.forEach((m) => {
+          m.id && m.name && (packet.push(m.id), packet.push(m.name));
+        });
+        this.clan.members.forEach((m) => {
+          m.player.socket && m.player.socket.emit('sa', packet);
+        });
+        player.socket.emit('st', null, false);
+      }
+    });
+
     socket.on('13', (type, id) => {
       if (type) {
         socket.emit('us', 0, id);
