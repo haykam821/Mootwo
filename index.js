@@ -39,6 +39,79 @@ function flatten(arr) {
   , []);
 }
 
+class Vector {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+  add(v) {
+    this.x += v.x;
+    this.y += v.y;
+    return this;
+  }
+  sub(v) {
+    this.x -= v.x;
+    this.y -= v.y;
+    return this;
+  }
+  div(v) {
+    this.x /= v.x;
+    this.y /= v.y;
+    return this;
+  }
+  mult(v) {
+    this.x *= v.x;
+    this.y *= v.y;
+    return this;
+  }
+  scale(v) {
+    this.x *= v;
+    this.y *= v;
+    return this;
+  }
+  shrink(v) {
+    this.x /= v;
+    this.y /= v;
+    return this;
+  }
+  moveTowards(v, amount) {
+    let dir = new Vector(v.x - this.x, v.y - this.y).limitTo(amount);
+    this.x += dir.x;
+    this.y += dir.y;
+    return this;
+  }
+  limitTo(value) {
+    return this.scale(value / this.length);
+  }
+  dot(v) {
+    return this.x * v.x + this.y * v.y;
+  }
+  angleFrom(v) {
+    let angle = Math.atan2(v.y - this.y, v.x - this.x) - (Math.PI / 2);
+    angle += Math.PI / 2;
+    if (angle < 0) angle += Math.PI * 2;
+    return angle;
+  }
+  clone() {
+    return new Vector(this.x, this.y);
+  }
+  toString() {
+    return `(${this.x}, ${this.y})`;
+  }
+  equalTo(v) {
+    return this.x === v.x && this.y === v.y;
+  }
+  constraint(min, max) {
+    
+  }
+  get unitVector() {
+    var length = this.length;
+    return new Vector(this.x / length, this.y / length);
+  }
+  get length() {
+    return Math.sqrt((this.x * this.x) + (this.y * this.y));
+  }
+}
 class Player {
   constructor(server, id) {
     let config = server.config;
