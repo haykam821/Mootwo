@@ -588,7 +588,7 @@ let app = new Server({
   waterCurrent: 0.0011,
   maxNameLength: 15,
   devPassword: 'PASSWORD',
-  noAllianceButton: true
+  noAllianceButton: false
 });
 
 repl.start({
