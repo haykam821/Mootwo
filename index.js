@@ -462,7 +462,7 @@ class Player {
           } else if (typeof args !== 'undefined') {
             this.size = 60;
           }
-          this.sendSelfStatus();
+          this.updateStatus();
         } else if (command === 'hyperspeed'){
           let args = parseFlags(argString, ['-n', '-s']); // normal speed, speed factor
           if (typeof args !== 'undefined' && args.n) {
@@ -488,7 +488,9 @@ class Player {
     
     let to = [];
     for (let i in this.server.clans) {
-      to.push({ sid: i, owner: this.server.clans[i].owner.id })
+      let o = this.server.clans[i];
+      if (!o) continue;
+      to.push({ sid: i, owner: o.owner.id })
     }
     socket.emit('id', {
       teams: to
@@ -507,8 +509,8 @@ class Player {
   slowDown() {
     this.vel.set(0, 0);
   }
-  broadcastStatus(socket) {
-    socket !== this.socket && socket.emit('2', [
+  sendStatus(socket) {
+    socket.emit('2', [
       this.socket.id,
       this.id,
       this.name,
@@ -517,19 +519,13 @@ class Player {
       this.health, 100,
       this.size,
       this.skin
-    ], false);
+    ], socket === this.socket);
   }
-  sendSelfStatus() {
-    this.socket.emit('2', [
-      this.socket.id,
-      this.id,
-      this.name,
-      ...this.pos,
-      this.aimAngle,
-      this.health, 100,
-      this.size,
-      this.skin
-    ], true);
+  updateStatus() {
+    this.server.players.forEach((p) => {
+      if (!p || !p.socket.connected) return
+      this.sendStatus(p.socket);
+    });
   }
   spawn() {
     let config = this.server.config;
@@ -538,12 +534,7 @@ class Player {
     this.pos.set(...this.server.allocatePosition(this.size));
     this.slowDown();
     socket.emit('1', this.id);
-    this.sendSelfStatus();
-    this.server.players.forEach((p) => {
-      if (!p) return
-      p.broadcastStatus && p.broadcastStatus(this.socket);
-      this.broadcastStatus && this.broadcastStatus(p.socket);
-    });
+    this.updateStatus();
   }
   hitResource(type) {
 
