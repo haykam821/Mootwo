@@ -410,7 +410,7 @@ class Player {
       let dif = now - this.lastPing;
       if (dif > config.mapPingTime) {
         this.lastPing = now;
-        this.server.broadcast('p', this.x, this.y);
+        this.server.broadcast('p', ...this.pos);
       }
     });
 
@@ -709,8 +709,7 @@ class Server {
     for (let i = 0; i < config.goldOres; i++) {
       let v = Vector.random(0, 0, mapScale, mapScale);
       if (v.y > (mapScale + riverWidth) / 2 ||
-          v.y < (mapScale - riverWidth) / 2
-      ) {
+          v.y < (mapScale - riverWidth) / 2) {
         i--;
         continue;
       }
