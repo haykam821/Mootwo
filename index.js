@@ -629,16 +629,16 @@ class Server {
     let now = Date.now();
     let delta = now - this.lastRun;
     this.lastRun = now;
-    if (send) {
-      let leaderboard = [];
-      for (let i of this.players) {
-        if (i == null) continue;
-        i.update(delta, send);
-        if (send && i.alive === true && i.name !== null){
-          leaderboard.push([i.id, i.name, i.points]);
-        }
+    let leaderboard = [];
+    for (let i of this.players) {
+      if (i == null) continue;
+      i.update(delta, send);
+      if (send && i.alive === true && i.name !== null){
+        leaderboard.push(i.id, i.name, i.points);
       }
-      leaderboard = flatten(leaderboard.sort((a, b) => b[2] - a[2]))
+    }
+    if (send) {
+      leaderboard.sort((a, b) => b[2] - a[2]);
       this.players.forEach(r => r && r.alive && r.socket.emit('5', leaderboard));
     }
   }
