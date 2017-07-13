@@ -394,7 +394,6 @@ class Player {
         this.clan.kick(baddy);
       }
     });
-    
 
     socket.on('13', (buying, id) => {
       if (buying && !this.ownedHats[id]) {
