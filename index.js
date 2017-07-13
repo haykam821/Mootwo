@@ -350,8 +350,9 @@ class Player {
 
     socket.on('3', angle => this.movement = angle);
 
-    socket.on('4', data => {
-      this.manualAttack = !!data;
+    socket.on('4', (attack, angle) => {
+      this.manualAttack = !!attack;
+      angle && this.aimAngle = angle;
       this.checkAttack();
     });
 
