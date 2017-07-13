@@ -21,5 +21,6 @@
   "bugs": {
     "url": "https://github.com/haykam821/Mootwo/issues"
   },
-  "homepage": "https://github.com/haykam821/Mootwo#readme"
+  "homepage": "https://github.com/haykam821/Mootwo#readme",
+  "scripts": {"start": "node index.js"}
 }

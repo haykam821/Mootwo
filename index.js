@@ -542,7 +542,7 @@ class Player {
     this.sendSelfStatus();
     this.server.players.forEach((p) => {
       p && p.broadcastStatus && p.broadcastStatus(this.socket);
-      this.broadcastStatus && this.broadcastStatus(p.socket);
+      p && this.broadcastStatus && this.broadcastStatus(p.socket);
     });
   }
 
