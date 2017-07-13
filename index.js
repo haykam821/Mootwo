@@ -395,6 +395,7 @@ class Player {
       }
     });
     
+
     socket.on('13', (buying, id) => {
       if (buying && !this.ownedHats[id]) {
         this.ownedHats[id] = true;
@@ -486,7 +487,7 @@ class Player {
     });
 
     socket.once('disconnect', () => this.destroy());
-    
+
     let to = [];
     for (let i in this.server.clans) {
       let o = this.server.clans[i];
