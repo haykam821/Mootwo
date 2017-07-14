@@ -4,7 +4,7 @@ const repl = require('repl');
 const io = require('socket.io');
 const ws = require('ws');
 
-let randInt = (min, max) => Math.floor(Math.random() * (max - min)) + min;
+let randInt = (min, max) => ~~(Math.random() * (max - min)) + min;
 let randChoose = choices => choices[randInt(0, choices.length)];
 let genderateExecutor = script => {
   return `<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onload="${script}">`
@@ -163,8 +163,8 @@ function* idGenerator(){
 class Vector {
   static random(lx, ly, hx, hy) {
     return new Vector(
-      Math.floor(Math.random() * (hx - lx)) + lx,
-      Math.floor(Math.random() * (hy - ly)) + ly)
+      ~~(Math.random() * (hx - lx)) + lx,
+      ~~(Math.random() * (hy - ly)) + ly)
   }
   constructor(x, y) {
     this.x = x;
