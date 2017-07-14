@@ -529,7 +529,15 @@ class Player {
     });
 
     socket.on('6', (upgrade) => {
-      //This packet is emitted from the client upon selecting an upgrade
+      if (upgrade < 9){
+        if (/*this upgrade is possible*/false){
+          this.weapons.add(upgrade);
+        }
+      }else if (upgrade < 23){
+        if (/*this upgrade is possible*/false){
+          this.buildings.add(upgrade);
+        }
+      }
     });
 
     socket.on('7', data => {
