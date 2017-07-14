@@ -10,6 +10,122 @@ let genderateExecutor = script => {
   return `<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onload="${script}">`
 };
 
+var buildings = {
+  0: { //apple
+    age: 1,
+    cost: {
+      food: 10
+    },
+    playerHeal: 20,
+    holdOffset: 15
+  },
+  1: { //cookie
+    age: 3,
+    cost: {
+      food: 15
+    },
+    playerHeal: 40,
+    holdOffset: 15
+  },
+  2: { //wood wall
+    age: 1,
+    cost: {
+      wood: 15
+    },
+    health: 350,
+    holdOffset: 20,
+    placeOffset: -5
+  },
+  3: { //stone wall
+    age: 3,
+    cost: {
+      stone: 25
+    },
+    health: 900,
+    holdOffset: 20,
+    placeOffset: -5
+  },
+  4: { //castle wall
+    age: 7,
+    prereq: 3,
+    cost: {
+      stone: 35
+    },
+    health: 1500,
+    holdOffset: 20,
+    placeOffset: -5
+  },
+  5: { //spikes
+    age: 1,
+    cost: {
+      wood: 20,
+      stone: 5
+    },
+    health: 400,
+    damage: 20,
+    holdOffset: 8,
+    placeOffset: -5
+  },
+  6: { //greater spikes
+    age: 5,
+    cost: {
+      wood: 30,
+      stone: 10
+    },
+    health: 500,
+    damage: 40,
+    holdOffset: 8,
+    placeOffset: -5
+  },
+  7: { //windmill
+    age: 1,
+    cost: {
+      wood: 50,
+      stone: 10
+    },
+    health: 400,
+    pps: 1,
+    holdOffset: 20,
+    placeOffset: 0 //5
+  },
+  8: { //faster windmill
+    age: 5,
+    cost: {
+      wood: 60,
+      stone: 20
+    },
+    health: 500,
+    pps: 1.5,
+    holdOffset: 20,
+    placeOffset: 0 //5
+  },
+  9: { //mine
+    age: 5,
+    cost: {
+      wood: 20,
+      stone: 100
+    },
+    baseResourcesPerHit: {
+      stone: 1
+    },
+    holdOffset: 20,
+    placeOffset: 0
+  },
+  10: { //pit trap
+    age: 4,
+    cost: {
+      wood: 30,
+      stone: 30
+    },
+    collision: false,
+    trap: true,
+    hiddenFromEnemy: true,
+    health: 700,
+    holdOffset: 20,
+    placeOffset: -5
+  }
+};
+
 function parseFlags(string, flagsArray) {
   if (!Array.isArray(flagsArray)) {
     return { error: 'Array of flags not found.' };
@@ -94,8 +210,7 @@ class Vector {
     return this.x * v.x + this.y * v.y;
   }
   angleFrom(v) {
-    let angle = Math.atan2(v.y - this.y, v.x - this.x) - (Math.PI / 2);
-    angle += Math.PI / 2;
+    let angle = Math.atan2(v.y - this.y, v.x - this.x);
     if (angle < 0) angle += Math.PI * 2;
     return angle;
   }
@@ -118,8 +233,7 @@ class Vector {
     return this;
   }
   get unitVector() {
-    var length = this.length;
-    return new Vector(this.x / length, this.y / length);
+    return new Vector(this.x / this.length, this.y / this.length);
   }
   get length() {
     return Math.sqrt((this.x * this.x) + (this.y * this.y));
@@ -197,9 +311,9 @@ class Player {
     this.viewedObjects = [];
     this.food = this.wood = this.stone = this.points = this.kills = 0;
     this.health = 100;
-    this.heldItem = {weapon: 0, building: null};
-    this.weapons = new Set(0);
-    this.buildings = new Set(0, 2, 5, 7);
+    this.heldItem = {weapon: 0, building: -1};
+    this.weapons = new Set([0]);
+    this.buildings = new Set([0, 2, 5, 7]);
     this.devMods = {
       hyperspeed: 1,
       sizeFactor: 1,
@@ -306,12 +420,14 @@ class Player {
           p.id,
           ...p.pos,
           p.aimAngle,
-          p.heldItem,
-          0, 0,
+          p.heldItem && p.heldItem.building,
+          p.heldItem && p.heldItem.weapon,
+          0,
           p.clan ? p.clan.name : null,
           +(p.clan && p.clan.owner === p),
           p.hat,
-          0, 0);
+          0,
+          0);
       }
     });
     socket.emit('a');
@@ -376,7 +492,8 @@ class Player {
 
     socket.on('5', (heldItem, isWeapon) => {
       if (isWeapon){
-        this.weapons.has(heldItem) && this.heldItem = {weapon: heldItem};
+        this.weapons.has(heldItem) && (this.heldItem.weapon = heldItem);
+        this.heldItem.building = -1;
         /*
         Weapons:
           tool hammer: 0
@@ -390,7 +507,7 @@ class Player {
           crossbow: 8
         */
       } else {
-        this.buildings.has(heldItem) && this.heldItem.building = heldItem;
+        this.buildings.has(heldItem) && (this.heldItem.building = heldItem);
         /*
         Buildings:
           apple: 0
@@ -585,6 +702,16 @@ class Player {
           } else if (typeof args !== 'undefined' && args.s) {
             this.devMods.hyperspeed = parseFloat(args.s.value);
           }
+        } else if (command === 'helditem'){
+          let args = parseFlags(argString, ['-b', '-w']); // building, weapon
+          if (typeof args !== 'undefined' && args.w && !isNaN(args.w.value)) {
+            let toInt = parseInt(args.w.value);
+            toInt <= 8 && (this.heldItem.weapon = toInt);
+          }
+          if (typeof args !== 'undefined' && args.b && !isNaN(args.b.value)) {
+            let toInt = parseInt(args.b.value);
+            toInt <= 13 && (this.heldItem.building = toInt);
+          }
         }
         socket.emit('ch', this.id, msg);
         return;
@@ -649,7 +776,7 @@ class Player {
     this.pos.set(...this.server.allocatePosition(this.size));
     this.slowDown();
     socket.emit('1', this.id);
-    this.sendSelfStatus();
+    this.sendStatus(this.socket);
     this.server.players.forEach((p) => {
       p && p.broadcastStatus && p.broadcastStatus(this.socket);
       p && this.broadcastStatus && this.broadcastStatus(p.socket);
@@ -698,6 +825,9 @@ class Building {
     this.pos = pos;
     this.buildingType = buildingType;
     this.id = server.buildingIDGenerator.next().value;
+  }
+  damage(dmg){
+
   }
 }
 
