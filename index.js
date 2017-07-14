@@ -192,7 +192,9 @@ class Player {
     this.viewedObjects = [];
     this.food = this.wood = this.stone = this.points = this.kills = 0;
     this.health = 100;
-    this.heldItem = -1;
+    this.heldItem = {weapon: 0, building: null};
+    this.weapons = new Set(0);
+    this.buildings = new Set(0, 2, 5, 7);
     this.devMods = {
       hyperspeed: 1,
       sizeFactor: 1,
@@ -203,7 +205,7 @@ class Player {
     this.maxXp = 100;
     this.level = 1;
     this.hat = 0;
-    this.ownedHats = [true];
+    this.ownedHats = new Set();
     this.evalQuene = [];
 
     this.aimAngle = 0;
@@ -350,19 +352,62 @@ class Player {
 
     socket.on('3', angle => this.movement = angle);
 
-    socket.on('4', (attack, angle) => {
-      this.manualAttack = !!attack;
-      angle && this.aimAngle = angle;
-      this.checkAttack();
+    socket.on('4', (attack, angle) => { //angle is only available on building placement
+      if (attack && angle && this.heldItem.building){
+        //if (this.heldItem.building == 0 (or 1 for cookie)) {
+          //Make a function to heal the player
+        //}
+        //if (this.heldItem.building == 2) {
+          //Make a function to place the building correctly
+        //}
+        //Subtract resources
+        //socket.emit('9', 'resourceType', 1);
+        //socket.emit('14', 1, 1);
+      } else {
+        this.manualAttack = !!attack;
+        this.checkAttack();
+      }
     });
 
-    socket.on('5', (heldItem) => {
-      this.heldItem = heldItem;
-      /*
-      Held Items:
-      -1: Hammer (Age 1)
-      2: Wood Wall
-      */
+    socket.on('5', (heldItem, isWeapon) => {
+      if (isWeapon){
+        this.weapons.has(heldItem) && this.heldItem = {weapon: heldItem};
+        /*
+        Weapons:
+          tool hammer: 0
+          hand axe: 1
+          great axe: 2
+          short sword: 3
+          katana: 4
+          hunting bow: 5
+          great hammer: 6
+          wooden shield: 7
+          crossbow: 8
+        */
+      } else {
+        this.buildings.has(heldItem) && this.heldItem.building = heldItem;
+        /*
+        Buildings:
+          apple: 0
+          cookie: 1
+          wood wall: 2
+          stone wall: 3
+          castle wall: 4
+          spikes: 5
+          greater spikes: 6
+          windmill: 7
+          faster windmill: 8
+          mine: 9
+          pit trap: 10
+          boost pad: 11
+          turret: 12
+          platform: 13
+        */
+      }
+    });
+
+    socket.on('6', (upgrade) => {
+      //This packet is emitted from the client upon selecting an upgrade
     });
 
     socket.on('7', data => {
@@ -406,11 +451,11 @@ class Player {
     });
 
     socket.on('13', (buying, id) => {
-      if (buying && !this.ownedHats[id]) {
-        this.ownedHats[id] = true;
+      if (buying && !this.ownedHats.has(id)) {
+        this.ownedHats.add(id);
         socket.emit('us', 0, id);
         //remove gold here
-      } else if (this.ownedHats[id]) {
+      } else if (this.ownedHats.has(id)) {
         this.hat = id;
         socket.emit('us', 1, id);
       }
