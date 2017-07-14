@@ -356,6 +356,15 @@ class Player {
       this.checkAttack();
     });
 
+    socket.on('5', (heldItem) => {
+      this.heldItem = heldItem;
+      /*
+      Held Items:
+      -1: Hammer (Age 1)
+      2: Wood Wall
+      */
+    });
+
     socket.on('7', data => {
       if (data == 1) {
         this.autoAttack = !this.autoAttack;
@@ -452,6 +461,60 @@ class Player {
           } else if (typeof args !== 'undefined' && args.n) {
             args.n && !isNaN(args.n.value) && (this.points = parseInt(args.n.value));
             socket.emit('9', 'points', this.points, 1);
+          }
+        } else if (command === 'setr') {
+          let args = parseFlags(argString, ['-a', '-f', '-w', '-s', '-p']); // all [value], food [value], wood [value], stone [value], player target (defaults to user)
+          if (typeof args !== 'undefined' && ((args.a && !isNaN(args.a.value)) || (args.f && !isNaN(args.f.value)) || (args.w && !isNaN(args.w.value)) || (args.s && !isNaN(args.s.value))) && args.p) {
+            let filtered = this.server.players.filter(p => p && p.name === args.p.value);
+            if (filtered.length > 0 && filtered[0].socket) {
+              if (args.a && !isNaN(args.a.value)){
+                let toInt = parseInt(args.a.value);
+                filtered[0].food = toInt;
+                filtered[0].wood = toInt;
+                filtered[0].stone = toInt;
+                filtered[0].socket.emit('9', 'food', filtered[0].food, 1);
+                filtered[0].socket.emit('9', 'wood', filtered[0].wood, 1);
+                filtered[0].socket.emit('9', 'stone', filtered[0].stone, 1);
+              } else {
+                if (args.f && !isNaN(args.f.value)){
+                  filtered[0].food = parseInt(args.f.value);
+                  filtered[0].socket.emit('9', 'food', filtered[0].food, 1);
+                }
+                if (args.w && !isNaN(args.w.value)){
+                  filtered[0].wood = parseInt(args.w.value);
+                  filtered[0].socket.emit('9', 'wood', filtered[0].wood, 1);
+                }
+                if (args.s && !isNaN(args.s.value)){
+                  filtered[0].stone = parseInt(args.s.value);
+                  filtered[0].socket.emit('9', 'stone', filtered[0].stone, 1);
+                }
+              }
+            }
+          } else if (typeof args !== 'undefined' && ((args.a && !isNaN(args.a.value)) || (args.f && !isNaN(args.f.value)) || (args.w && !isNaN(args.w.value)) || (args.s && !isNaN(args.s.value)))) {
+            if (this.socket) {
+              if (args.a && !isNaN(args.a.value)){
+                let toInt = parseInt(args.a.value);
+                this.food = toInt;
+                this.wood = toInt;
+                this.stone = toInt;
+                this.socket.emit('9', 'food', this.food, 1);
+                this.socket.emit('9', 'wood', this.wood, 1);
+                this.socket.emit('9', 'stone', this.stone, 1);
+              } else {
+                if (args.f && !isNaN(args.f.value)){
+                  this.food = parseInt(args.f.value);
+                  this.socket.emit('9', 'food', this, 1);
+                }
+                if (args.w && !isNaN(args.w.value)){
+                  this.wood = parseInt(args.w.value);
+                  this.socket.emit('9', 'wood', this.wood, 1);
+                }
+                if (args.s && !isNaN(args.s.value)){
+                  this.stone = parseInt(args.s.value);
+                  this.socket.emit('9', 'stone', this.stone, 1);
+                }
+              }
+            }
           }
         } else if (command === 'giant') {
           let args = parseFlags(argString, ['-q', '-s']); // quitting being giant, size factor
