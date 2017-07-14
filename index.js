@@ -39,6 +39,11 @@ function flatten(arr) {
   , []);
 }
 
+function* idGenerator(){
+  var _id = 0;
+  while (true) yield _id++;
+}
+
 class Vector {
   static random(lx, ly, hx, hy) {
     return new Vector(
@@ -660,12 +665,13 @@ class Player {
     }
   }
 }
+
 class Resource {
   constructor(server, id, v, size, type) {
-    let config = server.config;
+    this.server = server;
     this.pos = v;
     this.id = id;
-    this.type = config.resourceTypes.indexOf(type);
+    this.type = server.config.resourceTypes.indexOf(type);
     this.size = size;
     this.angle = (Math.random() - 0.5) * Math.PI;
     this.init();
@@ -685,6 +691,16 @@ class Resource {
     ];
   }
 }
+
+class Building {
+  constructor(server, pos, buildingType){
+    this.server = server;
+    this.pos = pos;
+    this.buildingType = buildingType;
+    this.id = server.buildingIDGenerator.next().value;
+  }
+}
+
 class Server {
   constructor(config) {
     this.config = config;
@@ -693,6 +709,8 @@ class Server {
     this.lastRun = Date.now();
     this.clans = {};
     this.objects = [];
+    this.resourceIDGenerator = idGenerator();
+    this.buildingIDGenerator = idGenerator();
     this.init();
   }
   addClan(n) {
@@ -786,7 +804,6 @@ class Server {
     let riverWidth = config.riverWidth;
     let areaSize = mapScale / areaCount;
     let all = [];
-    let id = 0;
     for (let afx = 0, atx = 1; afx < areaCount; afx++, atx++) {
       for (let afy = 0, aty = 1; afy < areaCount; afy++, aty++) {
         for (let i = 0; i < config.treesPerArea; i++) {
@@ -796,7 +813,7 @@ class Server {
           if (v.y < mapScale - config.snowBiomeTop && (
               v.y > (mapScale + riverWidth) / 2 ||
               v.y < (mapScale - riverWidth) / 2)
-            ) all.push(new Resource(this, id++, v, randChoose(config.treeScales), 'wood'));
+            ) all.push(new Resource(this, this.resourceIDGenerator.next().value, v, randChoose(config.treeScales), 'wood'));
         }
         for (let i = 0; i < config.bushesPerArea; i++) {
           let v = Vector.random(
@@ -804,13 +821,13 @@ class Server {
             areaSize * afy, areaSize * aty);
           if (v.y > (mapScale + riverWidth) / 2 ||
               v.y < (mapScale - riverWidth) / 2
-            ) all.push(new Resource(this, id++, v, randChoose(config.bushScales), 'food'));
+            ) all.push(new Resource(this, this.resourceIDGenerator.next().value, v, randChoose(config.bushScales), 'food'));
         }
       }
     }
     for (let i = 0; i < config.totalRocks; i++) {
       let v = Vector.random(0, 0, mapScale, mapScale);
-      all.push(new Resource(this, id++, v, randChoose(config.rockScales), 'stone'));
+      all.push(new Resource(this, this.resourceIDGenerator.next().value, v, randChoose(config.rockScales), 'stone'));
     }
     for (let i = 0; i < config.goldOres; i++) {
       let v = Vector.random(0, 0, mapScale, mapScale);
@@ -819,7 +836,7 @@ class Server {
         i--;
         continue;
       }
-      all.push(new Resource(this, id++, v, randChoose(config.rockScales), 'points'));
+      all.push(new Resource(this, this.resourceIDGenerator.next().value, v, randChoose(config.rockScales), 'points'));
     }
     this.objects = all;
   }
@@ -857,7 +874,7 @@ class Server {
   systemUpdate() {
     this.exit('updating');
     setTimeout(() => {
-      process.exit(0)
+      process.exit(0);
     }, 500);
   }
 }
