@@ -17,7 +17,8 @@ var buildings = {
       food: 10
     },
     playerHeal: 20,
-    holdOffset: 15
+    holdOffset: 15,
+    size: 22
   },
   1: { //cookie
     age: 3,
@@ -25,7 +26,8 @@ var buildings = {
       food: 15
     },
     playerHeal: 40,
-    holdOffset: 15
+    holdOffset: 15,
+    size: 27
   },
   2: { //wood wall
     age: 1,
@@ -34,7 +36,8 @@ var buildings = {
     },
     health: 350,
     holdOffset: 20,
-    placeOffset: -5
+    placeOffset: -5,
+    size: 50
   },
   3: { //stone wall
     age: 3,
@@ -43,7 +46,8 @@ var buildings = {
     },
     health: 900,
     holdOffset: 20,
-    placeOffset: -5
+    placeOffset: -5,
+    size: 50
   },
   4: { //castle wall
     age: 7,
@@ -53,7 +57,8 @@ var buildings = {
     },
     health: 1500,
     holdOffset: 20,
-    placeOffset: -5
+    placeOffset: -5,
+    size: 52
   },
   5: { //spikes
     age: 1,
@@ -64,7 +69,9 @@ var buildings = {
     health: 400,
     damage: 20,
     holdOffset: 8,
-    placeOffset: -5
+    placeOffset: -5,
+    padding: -23,
+    size: 49
   },
   6: { //greater spikes
     age: 5,
@@ -75,7 +82,9 @@ var buildings = {
     health: 500,
     damage: 40,
     holdOffset: 8,
-    placeOffset: -5
+    placeOffset: -5,
+    padding: -23,
+    size: 52
   },
   7: { //windmill
     age: 1,
@@ -86,7 +95,9 @@ var buildings = {
     health: 400,
     pps: 1,
     holdOffset: 20,
-    placeOffset: 0 //5
+    placeOffset: 5,
+    padding: 25,
+    size: 45
   },
   8: { //faster windmill
     age: 5,
@@ -97,7 +108,9 @@ var buildings = {
     health: 500,
     pps: 1.5,
     holdOffset: 20,
-    placeOffset: 0 //5
+    placeOffset: 5,
+    padding: 25,
+    size: 47
   },
   9: { //mine
     age: 5,
@@ -109,7 +122,8 @@ var buildings = {
       stone: 1
     },
     holdOffset: 20,
-    placeOffset: 0
+    placeOffset: 0,
+    size: 65
   },
   10: { //pit trap
     age: 4,
@@ -122,7 +136,44 @@ var buildings = {
     hiddenFromEnemy: true,
     health: 700,
     holdOffset: 20,
-    placeOffset: -5
+    placeOffset: -5,
+    size: 50
+  },
+  11: { //boost pad
+    age: 4,
+    cost: {
+      wood: 5,
+      stone: 30
+    },
+    health: 400,
+    boost: 1.5,
+    holdOffset: 20,
+    placeOffset: -5,
+    size: 45
+  },
+  12: { //turret
+    age: 7,
+    cost: {
+      wood: 200,
+      stone: 150
+    },
+    health: 800,
+    projectileRange: 700,
+    projectileReload: 2200,
+    holdOffset: 20,
+    placeOffset: -5,
+    size: 43
+  },
+  13: { //platforms
+    age: 7,
+    cost: {
+      wood: 20
+    },
+    collision: false,
+    health: 300,
+    holdOffset: 20,
+    placeOffset: -5,
+    size: 43
   }
 };
 
