@@ -506,7 +506,7 @@ class Player {
 
     socket.on('1', data => {
       this.name = data.name.length > config.maxNameLength || !data.name ? 'unknown' : data.name;
-      this.skin = data.skin;
+      this.skin = data.skin >= 0 && data.skin <= 5 ? data.skin | 0;
       this.spawn();
       this.peek();
     });
