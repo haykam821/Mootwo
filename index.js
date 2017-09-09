@@ -179,19 +179,25 @@ var buildings = {
 
 function parseFlags(string, flagsArray) {
   if (!Array.isArray(flagsArray)) {
-    return { error: 'Array of flags not found.' };
+    return {
+      error: 'Array of flags not found.'
+    };
   }
   let returnObject = {};
-  let flagLocations = [[-1, 'null', []]];
+  let flagLocations = [
+    [-1, 'null', []]
+  ];
   let stringArray = string.split(' ');
   for (let i = 0; i < stringArray.length; i++) {
     if (flagsArray.indexOf(stringArray[i]) > -1) {
-      flagLocations.push([i, stringArray[i], []]);
+      flagLocations.push([i, stringArray[i],
+        []
+      ]);
     } else {
       flagLocations[flagLocations.length - 1][2].push(stringArray[i]);
     }
   }
-  for (let i = 0; i < flagLocations.length; i++){
+  for (let i = 0; i < flagLocations.length; i++) {
     returnObject[flagLocations[i][1].replace(/^(-*)/g, '')] = {
       flagLocation: flagLocations[i][0],
       value: flagLocations[i][2].join(' '),
@@ -202,20 +208,17 @@ function parseFlags(string, flagsArray) {
 
 function flatten(arr) {
   return arr.reduce((flat, toFlatten) =>
-    flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten)
-  , []);
+    flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten), []);
 }
 
-function* idGenerator(){
+function* idGenerator() {
   var _id = 0;
   while (true) yield _id++;
 }
 
 class Vector {
   static random(lx, ly, hx, hy) {
-    return new Vector(
-      ~~(Math.random() * (hx - lx)) + lx,
-      ~~(Math.random() * (hy - ly)) + ly)
+    return new Vector(~~(Math.random() * (hx - lx)) + lx, ~~(Math.random() * (hy - ly)) + ly)
   }
   constructor(x, y) {
     this.x = x;
@@ -287,14 +290,14 @@ class Vector {
     return new Vector(this.x / this.length, this.y / this.length);
   }
   get length() {
-    return Math.sqrt((this.x * this.x) + (this.y * this.y));
-  }
-  *[Symbol.iterator]() {
-    // jshint ignore: start
-    yield this.x;
-    yield this.y;
-    // jshint ignore: end
-  }
+      return Math.sqrt((this.x * this.x) + (this.y * this.y));
+    }
+    *[Symbol.iterator]() {
+      // jshint ignore: start
+      yield this.x;
+      yield this.y;
+      // jshint ignore: end
+    }
 }
 class Clan {
   constructor(by, name) {
@@ -309,7 +312,7 @@ class Clan {
   }
   decide(id, action) {
     let player = this.server.players[id];
-    if (!player|| !action) return;
+    if (!player || !action) return;
     this.welcome(player);
   }
   update() {
@@ -324,7 +327,10 @@ class Clan {
   init() {
     if (this.server.addClan(this)) return;
     this.welcome(this.owner);
-    this.server.broadcast('ac', { sid: this.name, owner: this.owner.id });
+    this.server.broadcast('ac', {
+      sid: this.name,
+      owner: this.owner.id
+    });
   }
   welcome(member) {
     if (this.members.indexOf(member) !== -1) return;
@@ -362,7 +368,10 @@ class Player {
     this.viewedObjects = [];
     this.food = this.wood = this.stone = this.points = this.kills = 0;
     this.health = 100;
-    this.heldItem = {weapon: 0, building: -1};
+    this.heldItem = {
+      weapon: 0,
+      building: -1
+    };
     this.weapons = new Set([0]);
     this.buildings = new Set([0, 2, 5, 7]);
     this.devMods = {
@@ -474,8 +483,7 @@ class Player {
           p.heldItem && p.heldItem.building,
           p.heldItem && p.heldItem.weapon,
           0,
-          p.clan ? p.clan.name : null,
-          +(p.clan && p.clan.owner === p),
+          p.clan ? p.clan.name : null, +(p.clan && p.clan.owner === p),
           p.hat,
           0,
           0);
@@ -525,12 +533,12 @@ class Player {
     socket.on('3', angle => this.movement = angle);
 
     socket.on('4', (attack, angle) => { //angle is only available on building placement
-      if (attack && angle && this.heldItem.building){
+      if (attack && angle && this.heldItem.building) {
         //if (this.heldItem.building == 0 (or 1 for cookie)) {
-          //Make a function to heal the player
+        //Make a function to heal the player
         //}
         //if (this.heldItem.building == 2) {
-          //Make a function to place the building correctly
+        //Make a function to place the building correctly
         //}
         //Subtract resources
         //socket.emit('9', 'resourceType', 1);
@@ -542,7 +550,7 @@ class Player {
     });
 
     socket.on('5', (heldItem, isWeapon) => {
-      if (isWeapon){
+      if (isWeapon) {
         this.weapons.has(heldItem) && (this.heldItem.weapon = heldItem);
         this.heldItem.building = -1;
         /*
@@ -580,12 +588,12 @@ class Player {
     });
 
     socket.on('6', (upgrade) => {
-      if (upgrade < 9){
-        if (/*this upgrade is possible*/false){
+      if (upgrade < 9) {
+        if ( /*this upgrade is possible*/ false) {
           this.weapons.add(upgrade);
         }
-      }else if (upgrade < 23){
-        if (/*this upgrade is possible*/false){
+      } else if (upgrade < 23) {
+        if ( /*this upgrade is possible*/ false) {
           this.buildings.add(upgrade);
         }
       }
@@ -693,7 +701,7 @@ class Player {
           if (typeof args !== 'undefined' && ((args.a && !isNaN(args.a.value)) || (args.f && !isNaN(args.f.value)) || (args.w && !isNaN(args.w.value)) || (args.s && !isNaN(args.s.value))) && args.p) {
             let filtered = this.server.players.filter(p => p && p.name === args.p.value);
             if (filtered.length > 0 && filtered[0].socket) {
-              if (args.a && !isNaN(args.a.value)){
+              if (args.a && !isNaN(args.a.value)) {
                 let toInt = parseInt(args.a.value);
                 filtered[0].food = toInt;
                 filtered[0].wood = toInt;
@@ -702,15 +710,15 @@ class Player {
                 filtered[0].socket.emit('9', 'wood', filtered[0].wood, 1);
                 filtered[0].socket.emit('9', 'stone', filtered[0].stone, 1);
               } else {
-                if (args.f && !isNaN(args.f.value)){
+                if (args.f && !isNaN(args.f.value)) {
                   filtered[0].food = parseInt(args.f.value);
                   filtered[0].socket.emit('9', 'food', filtered[0].food, 1);
                 }
-                if (args.w && !isNaN(args.w.value)){
+                if (args.w && !isNaN(args.w.value)) {
                   filtered[0].wood = parseInt(args.w.value);
                   filtered[0].socket.emit('9', 'wood', filtered[0].wood, 1);
                 }
-                if (args.s && !isNaN(args.s.value)){
+                if (args.s && !isNaN(args.s.value)) {
                   filtered[0].stone = parseInt(args.s.value);
                   filtered[0].socket.emit('9', 'stone', filtered[0].stone, 1);
                 }
@@ -718,7 +726,7 @@ class Player {
             }
           } else if (typeof args !== 'undefined' && ((args.a && !isNaN(args.a.value)) || (args.f && !isNaN(args.f.value)) || (args.w && !isNaN(args.w.value)) || (args.s && !isNaN(args.s.value)))) {
             if (this.socket) {
-              if (args.a && !isNaN(args.a.value)){
+              if (args.a && !isNaN(args.a.value)) {
                 let toInt = parseInt(args.a.value);
                 this.food = toInt;
                 this.wood = toInt;
@@ -727,15 +735,15 @@ class Player {
                 this.socket.emit('9', 'wood', this.wood, 1);
                 this.socket.emit('9', 'stone', this.stone, 1);
               } else {
-                if (args.f && !isNaN(args.f.value)){
+                if (args.f && !isNaN(args.f.value)) {
                   this.food = parseInt(args.f.value);
                   this.socket.emit('9', 'food', this, 1);
                 }
-                if (args.w && !isNaN(args.w.value)){
+                if (args.w && !isNaN(args.w.value)) {
                   this.wood = parseInt(args.w.value);
                   this.socket.emit('9', 'wood', this.wood, 1);
                 }
-                if (args.s && !isNaN(args.s.value)){
+                if (args.s && !isNaN(args.s.value)) {
                   this.stone = parseInt(args.s.value);
                   this.socket.emit('9', 'stone', this.stone, 1);
                 }
@@ -746,7 +754,7 @@ class Player {
           let args = parseFlags(argString, ['-q', '-s']); // quitting being giant, size factor
           if (typeof args !== 'undefined' && args.q) {
             this.size = config.playerScale;
-          } else if (typeof args !== 'undefined' && args.s){
+          } else if (typeof args !== 'undefined' && args.s) {
             this.devMods.sizeFactor = parseFloat(args.s.value);
             this.devMods.sizeFactor < 0 && (this.devMods.sizeFactor = 0);
             this.size = config.playerScale * this.devMods.sizeFactor;
@@ -754,14 +762,14 @@ class Player {
             this.size = 60;
           }
           this.updateStatus();
-        } else if (command === 'hyperspeed'){
+        } else if (command === 'hyperspeed') {
           let args = parseFlags(argString, ['-n', '-s']); // normal speed, speed factor
           if (typeof args !== 'undefined' && args.n) {
             this.devMods.hyperspeed = 1;
           } else if (typeof args !== 'undefined' && args.s) {
             this.devMods.hyperspeed = parseFloat(args.s.value);
           }
-        } else if (command === 'helditem'){
+        } else if (command === 'helditem') {
           let args = parseFlags(argString, ['-b', '-w']); // building, weapon
           if (typeof args !== 'undefined' && args.w && !isNaN(args.w.value)) {
             let toInt = parseInt(args.w.value);
@@ -779,9 +787,11 @@ class Player {
     });
 
     socket.on('devLogin', password => {
-      if (password === this.server.config.devPassword){
+      if (password === this.server.config.devPassword) {
         this.devMods.isDev = true;
-        setTimeout(() => {socket.emit('ch', this.id, 'Logged in as Dev!');}, 500);
+        setTimeout(() => {
+          socket.emit('ch', this.id, 'Logged in as Dev!');
+        }, 500);
       }
     });
 
@@ -791,7 +801,10 @@ class Player {
     for (let i in this.server.clans) {
       let o = this.server.clans[i];
       if (!o) continue;
-      to.push({ sid: i, owner: o.owner.id })
+      to.push({
+        sid: i,
+        owner: o.owner.id
+      })
     }
     socket.emit('id', {
       teams: to
@@ -872,20 +885,19 @@ class Resource {
       this.angle,
       this.size,
       this.type,
-      null,
-      -1,
+      null, -1,
     ];
   }
 }
 
 class Building {
-  constructor(server, pos, buildingType){
+  constructor(server, pos, buildingType) {
     this.server = server;
     this.pos = pos;
     this.buildingType = buildingType;
     this.id = server.buildingIDGenerator.next().value;
   }
-  damage(dmg){
+  damage(dmg) {
 
   }
 }
@@ -915,7 +927,9 @@ class Server {
     setInterval(() => this.update(), this.config.serverUpdateRate);
     this.generateWorld();
     this.server = [];
-    let wss = new ws.Server({ port: 5050 });
+    let wss = new ws.Server({
+      port: 5050
+    });
     wss.on('connection', ws => {
       let id = ws.protocol.replace(/[^0-9A-Za-z_\-]/g, '');
       for (let i of this.players) {
@@ -946,7 +960,7 @@ class Server {
     for (let i of this.players) {
       if (i == null) continue;
       i.update(delta, send);
-      if (send && i.alive === true && i.name !== null){
+      if (send && i.alive === true && i.name !== null) {
         leaderboard.push(i.id, i.name, i.points);
       }
     }
@@ -1001,16 +1015,15 @@ class Server {
             areaSize * afy, areaSize * aty);
           if (v.y < mapScale - config.snowBiomeTop && (
               v.y > (mapScale + riverWidth) / 2 ||
-              v.y < (mapScale - riverWidth) / 2)
-            ) all.push(new Resource(this, this.resourceIDGenerator.next().value, v, randChoose(config.treeScales), 'wood'));
+              v.y < (mapScale - riverWidth) / 2)) all.push(new Resource(this, this.resourceIDGenerator.next().value, v, randChoose(config.treeScales), 'wood'));
         }
         for (let i = 0; i < config.bushesPerArea; i++) {
           let v = Vector.random(
             areaSize * afx, areaSize * atx,
             areaSize * afy, areaSize * aty);
           if (v.y > (mapScale + riverWidth) / 2 ||
-              v.y < (mapScale - riverWidth) / 2
-            ) all.push(new Resource(this, this.resourceIDGenerator.next().value, v, randChoose(config.bushScales), 'food'));
+            v.y < (mapScale - riverWidth) / 2
+          ) all.push(new Resource(this, this.resourceIDGenerator.next().value, v, randChoose(config.bushScales), 'food'));
         }
       }
     }
@@ -1021,7 +1034,7 @@ class Server {
     for (let i = 0; i < config.goldOres; i++) {
       let v = Vector.random(0, 0, mapScale, mapScale);
       if (v.y > (mapScale + riverWidth) / 2 ||
-          v.y < (mapScale - riverWidth) / 2) {
+        v.y < (mapScale - riverWidth) / 2) {
         i--;
         continue;
       }
