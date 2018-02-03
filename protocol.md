@@ -31,17 +31,17 @@ MooMoo.io uses the socket.io protocol.
 
 ### For Players
 
-Each player have two ID's that's the same throughout the connection:
-* Short ID (SID, ID), which is an int
+Each player have two IDs that's the same throughout the connection:
+* Short ID (SID, ID), which is an integer
 * Long ID (LID), which is a hashed string, provided by socket.io
 
 ### For Objects
 
-Each object have an ID
+Each object has an ID.
 
 ### For Clans
 
-Clans do not have numbered ID, but rather uses it's name
+Clans do not have numbered ID, but rather uses its name.
 
 ## Server-Bound 
 
