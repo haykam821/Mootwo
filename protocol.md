@@ -15,6 +15,7 @@ MooMoo.io uses the socket.io protocol.
   * [`1` - Spawn](#1---spawn)
   * [`2` - Aim](#2---aim)
   * [`3` - Move](#3---move)
+  * [`7` - Auto Attack](#7---auto-attack)
   * [`8` - Create Clan](#8---create-clan)
   * [`10` - Join Clan](#10---join-clan)
   * [`14` - Ping](#14---ping)
@@ -58,6 +59,10 @@ Aim and point your weapon or tool at the angle you wish
 ### `3` - Move
 Move toward a direction
 * `angle` - The angle to move toward in radians, null if not moving
+
+### `7` - Auto Attack
+Change auto attack status.
+* `status` - Boolean representing whether to auto-attack or not
 
 ### `8` - Create Clan
 Creates a new clan or alliance
