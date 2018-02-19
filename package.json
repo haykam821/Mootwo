@@ -1,6 +1,6 @@
 {
   "name": "mootwo",
-  "version": "1.4.2",
+  "version": "1.5.0",
   "description": "MooTwo is a project dedicated to create a custom private backend server MooMoo.io.",
   "main": "index.js",
   "dependencies": {
