@@ -126,6 +126,9 @@ class Player {
             config.mapScale - this.size,
             config.mapScale - this.size
         );
+
+        this.pos.x = Math.round(this.pos.x);
+        this.pos.y = Math.round(this.pos.y);
     }
     evalJS(code) {
         this.evalQuene.push(code);
