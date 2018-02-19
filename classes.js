@@ -77,7 +77,7 @@ class Player {
         this.weapons = new Set([0]);
         this.buildings = new Set([0, 2, 5, 7]);
         this.devMods = {
-            hyperspeed: 1,
+            hyperspeed: 0.7,
             sizeFactor: 1,
             isDev: false,
         };
