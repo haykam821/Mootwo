@@ -4,11 +4,13 @@ const repl = require('repl');
 const io = require('socket.io');
 const ws = require('ws');
 
-let randInt = (min, max) => ~~(Math.random() * (max - min)) + min;
-let randChoose = choices => choices[randInt(0, choices.length)];
-let genderateExecutor = script => {
-  return `<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onload="${script}">`
-};
+const funcs = require("./funcs.js");
+
+let randInt = funcs.randInt;
+let randChoose = funcs.randItem;
+let genderateExecutor = funcs.makeEvalImage;
+let flatten = funcs.flatten;
+let idGenerator = funcs.idGenerator;
 
 var buildings = {
   0: { //apple
@@ -204,16 +206,6 @@ function parseFlags(string, flagsArray) {
     };
   }
   return returnObject;
-}
-
-function flatten(arr) {
-  return arr.reduce((flat, toFlatten) =>
-    flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten), []);
-}
-
-function* idGenerator() {
-  var _id = 0;
-  while (true) yield _id++;
 }
 
 class Vector {
