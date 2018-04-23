@@ -32,7 +32,8 @@ MooMoo.io uses the socket.io protocol.
 
 ### For Players
 
-Each player have two IDs that's the same throughout the connection:
+Each player has two IDs that will stay the same for the entire connection:
+
 * Short ID (SID, ID), which is an integer
 * Long ID (LID), which is a hashed string, provided by socket.io
 
@@ -42,7 +43,7 @@ Each object has an ID.
 
 ### For Clans
 
-Clans do not have numbered ID, but rather uses its name.
+Clans are not identified by any ID like players and objects, but rather use their name. This is one of the reasons why clans must be unique in their naming, the other being a style choice to prevent confusion by having two clans with the same name.
 
 ## Server-Bound 
 
