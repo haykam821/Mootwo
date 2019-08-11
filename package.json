@@ -8,12 +8,21 @@
     "socket.io": "^1.7.4",
     "ws": "^3.0.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "eslint": "^6.1.0",
+    "eslint-config-haykam": "^1.8.0",
+    "eslint-plugin-extra-rules": "0.0.0-development",
+    "eslint-plugin-html": "^6.0.0",
+    "eslint-plugin-json": "^1.4.0",
+    "eslint-plugin-markdown": "^1.0.0",
+    "eslint-plugin-unicorn": "^10.0.0"
+  },
   "engines": {
     "node": ">= 7.x.x"
   },
   "scripts": {
-    "start": "node index"
+    "start": "node index",
+    "lint": "eslint \"./**/*.js\""
   },
   "repository": {
     "type": "git",
